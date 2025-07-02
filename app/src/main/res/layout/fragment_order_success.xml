@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="@color/pinkBackground"
+    android:gravity="center"
+    android:padding="24dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageLogo"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/delivery_truck_speed_40px"
+        android:contentDescription="Logo"
+        android:layout_marginBottom="32dp"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/textOrderSuccess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Order Placed Successfully!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnTrackOrder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Track My Order"
+        android:backgroundTint="@color/redIcon"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>

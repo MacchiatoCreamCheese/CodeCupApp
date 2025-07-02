@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/pinkBackground">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/textGreeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Good Morning,"
+                android:textSize="16sp"
+                android:textStyle="normal"
+                android:textColor="@color/greyIcon"
+                android:layout_gravity="start" />
+
+            <TextView
+                android:id="@+id/textUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alice"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginTop="2dp"
+                android:layout_gravity="start" />
+
+        </LinearLayout>
+
+        <!-- Promo Carousel -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/promoCarousel"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:clipToPadding="false"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:overScrollMode="never" />
+
+        <!-- Dots Indicator -->
+        <LinearLayout
+            android:id="@+id/dotsLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Loyalty Card Title -->
+        <include layout="@layout/loyalty_card" />
+
+
+        <!-- Order Toggle Title -->
+        <TextView
+            android:text="Order"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Order Toggle Buttons -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:paddingHorizontal="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeliver"
+                android:checked="true"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Deliver"
+                android:textColor="@color/redIcon"
+                android:backgroundTint="@color/button_toggle_selector"
+                app:cornerRadius="12dp"
+                android:layout_marginEnd="4dp"
+                 />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickup"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pick up"
+                android:textColor="@color/redIcon"
+                android:backgroundTint="@color/button_toggle_selector"
+                app:cornerRadius="12dp"
+                android:layout_marginStart="4dp"/>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+        <!-- Best Seller Title -->
+        <TextView
+            android:text="Best Seller"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Best Seller Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBestSeller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Coffee Grid Title -->
+        <TextView
+            android:text="Coffee"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Coffee Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCoffee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</ScrollView>

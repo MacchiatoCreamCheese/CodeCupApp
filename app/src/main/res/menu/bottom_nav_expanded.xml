@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/storefront_40px"
+        android:title="Shop" />
+
+    <item
+        android:id="@+id/ordersFragment"
+        android:icon="@drawable/receipt_long_40px"
+        android:title="Orders" />
+
+    <item
+        android:id="@+id/rewardsFragment"
+        android:icon="@drawable/redeem_40px"
+        android:title="Rewards" />
+
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/account_circle_40px"
+        android:title="Profile" />
+
+    <item
+        android:id="@+id/helpFragment"
+        android:icon="@drawable/cancel_40px"
+        android:title="Help" />
+
+    <item
+        android:id="@+id/infoFragment"
+        android:icon="@drawable/cancel_40px"
+        android:title="Info" />
+
+</menu>

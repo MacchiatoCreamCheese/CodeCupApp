@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/authFragment">
+
+    <!-- Login/Sign in Screen -->
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.example.codecupapp.ui.auth.AuthFragment"
+        android:label="Auth" >
+        <action
+            android:id="@+id/action_authFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
+    <!-- Home Screen with Best Seller & Coffee Grid -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.codecupapp.HomeFragment"
+        android:label="Home" >
+        <action
+            android:id="@+id/action_homeFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_cartFragment"
+            app:destination="@id/cartFragment" />
+    </fragment>
+
+    <!-- Details Screen for product options -->
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.example.codecupapp.DetailsFragment"
+        android:label="Details" >
+
+        <argument
+            android:name="coffeeName"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_detailsFragment_to_cartFragment"
+            app:destination="@id/cartFragment" />
+    </fragment>
+
+    <!-- Cart Screen -->
+    <fragment
+        android:id="@+id/cartFragment"
+        android:name="com.example.codecupapp.CartFragment"
+        android:label="Cart" >
+        <action
+            android:id="@+id/action_cartFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+
+    <!-- Orders Screen with ongoing & history tabs -->
+    <fragment
+        android:id="@+id/ordersFragment"
+        android:name="com.example.codecupapp.OrdersFragment"
+        android:label="Orders" />
+
+    <!-- Rewards Screen -->
+    <fragment
+        android:id="@+id/rewardsFragment"
+        android:name="com.example.codecupapp.RewardsFragment"
+        android:label="Rewards" />
+
+    <!-- Profile Screen -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.codecupapp.ProfileFragment"
+        android:label="Profile" />
+    <fragment
+        android:id="@+id/orderSuccessFragment"
+        android:name="com.example.codecupapp.OrderSuccessFragment"
+        android:label="Order Success" />
+    <fragment
+        android:id="@+id/redeemFragment"
+        android:name="com.example.codecupapp.RedeemFragment"
+        android:label="Redeem" />
+
+
+</navigation>

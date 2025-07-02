@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "164740981763",
+    "project_id": "codecupapp",
+    "storage_bucket": "codecupapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164740981763:android:fde5f9b91ee4e28f4e5a36",
+        "android_client_info": {
+          "package_name": "com.example.codecupapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr6YMkNPXLcMXj-bORyCy6dBhe49LysNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

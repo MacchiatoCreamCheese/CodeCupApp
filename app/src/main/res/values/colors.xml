@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#AC0000</color>
+    <color name="purple_500">#AC0000</color>
+    <color name="purple_700">#AC0000</color>
+    <color name="teal_200">#AC0000</color>
+    <color name="teal_700">#AC0000</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+
+    <color name="pinkBackground">#FFF1F3</color>
+    <color name="cardPink">#F8DADB</color>
+    <color name="offWhite">#FFFBF5</color>
+    <color name="redIcon">#AC0000</color>
+    <color name="greyIcon">#9E9E9E</color>
+
+</resources>
