@@ -4,13 +4,17 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.example.codecupapp.data.CartItem
 
 class DetailsFragment : Fragment(R.layout.fragment_details) {
+
+    private var _binding: FragmentDetailsBinding? = null
+    private val binding get() = _binding!!
+
     private val cartViewModel: CartViewModel by activityViewModels()
 
     private var quantity = 1
@@ -21,59 +25,40 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
     private var basePrice = 3.00
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        _binding = FragmentDetailsBinding.bind(view)
+
         val coffeeName = arguments?.getString("coffeeName") ?: "Coffee"
+        binding.textCoffeeTitle.text = coffeeName
+        binding.textQuantity.text = quantity.toString()
 
-        val title = view.findViewById<TextView>(R.id.textCoffeeTitle)
-        val btnMinus = view.findViewById<Button>(R.id.btnMinus)
-        val btnPlus = view.findViewById<Button>(R.id.btnPlus)
-        val textTotal = view.findViewById<TextView>(R.id.textTotal)
-        val btnAddToCart = view.findViewById<Button>(R.id.btnAddToCart)
-        val textQuantity = view.findViewById<TextView>(R.id.textQuantity)
-
-        btnPlus.setOnClickListener {
-            quantity++
-            textQuantity.text = quantity.toString()
-        }
-        btnMinus.setOnClickListener {
-            if (quantity > 1) {
-                quantity--
-                textQuantity.text = quantity.toString()
-            }
-        }
-
-        title.text = coffeeName
-
-        setupOptionGroup(
-            view.findViewById(R.id.shotGroup),
-            listOf("Single", "Double"),
-        ) { selected ->
+        setupOptionGroup(binding.shotGroup, listOf("Single", "Double")) { selected ->
             shot = selected
         }
-
-        setupOptionGroup(
-            view.findViewById(R.id.tempGroup),
-            listOf("Hot", "Iced"),
-        ) { selected ->
+        setupOptionGroup(binding.tempGroup, listOf("Hot", "Iced")) { selected ->
             temperature = selected
         }
-
-        setupOptionGroup(
-            view.findViewById(R.id.sizeGroup),
-            listOf("Small", "Medium", "Large"),
-        ) { selected ->
+        setupOptionGroup(binding.sizeGroup, listOf("Small", "Medium", "Large")) { selected ->
             size = selected
         }
-
-        setupOptionGroup(
-            view.findViewById(R.id.iceGroup),
-            listOf("No Ice", "Some Ice", "Full Ice"),
-        ) { selected ->
+        setupOptionGroup(binding.iceGroup, listOf("No Ice", "Some Ice", "Full Ice")) { selected ->
             ice = selected
         }
 
+        binding.btnPlus.setOnClickListener {
+            quantity++
+            binding.textQuantity.text = quantity.toString()
+            updateTotal()
+        }
 
+        binding.btnMinus.setOnClickListener {
+            if (quantity > 1) {
+                quantity--
+                binding.textQuantity.text = quantity.toString()
+                updateTotal()
+            }
+        }
 
-        btnAddToCart.setOnClickListener {
+        binding.btnAddToCart.setOnClickListener {
             cartViewModel.dispatch(
                 CartAction.AddItem(
                     CartItem(
@@ -87,12 +72,10 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
                     )
                 )
             )
-
             findNavController().navigate(R.id.cartFragment)
         }
 
-
-        updateTotal(textTotal)
+        updateTotal()
     }
 
     private fun setupOptionGroup(container: LinearLayout, options: List<String>, onSelected: (String) -> Unit) {
@@ -107,7 +90,6 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
             }
             container.addView(button)
         }
-        // Default selection
         onSelected(options.first())
         updateSelection(container, options.first())
     }
@@ -124,10 +106,13 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
         }
     }
 
-    private fun updateTotal(textView: TextView) {
+    private fun updateTotal() {
         val total = basePrice * quantity
-        textView.text = "Total: $%.2f".format(total)
+        binding.textTotal.text = "Total: $%.2f".format(total)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
-
-

@@ -17,7 +17,8 @@
         android:src="@drawable/account_circle_40px"
         android:scaleType="centerCrop"
         android:background="@drawable/rounded_profile_bg"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:contentDescription="profile"/>
 
     <!-- User Info -->
     <!-- Inside your LinearLayout -->
@@ -35,6 +36,7 @@
         android:id="@+id/inputUserName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="text"
         android:hint="Enter Name"
         android:visibility="gone"
         android:layout_marginBottom="8dp" />

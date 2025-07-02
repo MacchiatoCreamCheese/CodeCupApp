@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var btnCartFloating: FloatingActionButton
     private lateinit var badgeCount: TextView
-    private val cartViewModel: CartViewModel by viewModels()
 
     private var isExpanded = false
 
@@ -75,9 +74,7 @@ class MainActivity : AppCompatActivity() {
         btnCartFloating = findViewById(R.id.btnCartFloating)
         badgeCount = findViewById(R.id.badgeCount)
 
-        cartViewModel.cartItems.observe(this) { items ->
-            updateCartBadge(cartItems.sumOf { it.quantity })
-        }
+
 
         // Setup Navigation
         val navHostFragment =
@@ -181,11 +178,15 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
-
     fun updateCartBadge(count: Int) {
         badgeCount.text = count.toString()
-        badgeCount.visibility = if (count > 0) View.VISIBLE else View.GONE
+
+        val currentDest = navController.currentDestination?.id
+
+        val shouldShowBadge = currentDest == R.id.homeFragment && count > 0
+        badgeCount.visibility = if (shouldShowBadge) View.VISIBLE else View.GONE
     }
+
 
 
 }

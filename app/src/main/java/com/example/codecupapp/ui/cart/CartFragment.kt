@@ -30,12 +30,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
 
         cartViewModel.cartItems.observe(viewLifecycleOwner) { items ->
             binding.recyclerCart.adapter = CartAdapter(items.toMutableList()) { position ->
-                val item = items[position]
-                cartViewModel.dispatch(CartAction.RemoveItem(item))
+                cartViewModel.dispatch(CartAction.RemoveItem(items[position]))
             }
-
             updateTotal(items)
+            (requireActivity() as MainActivity).updateCartBadge(items.sumOf { it.quantity })
         }
+
 
         binding.recyclerCart.layoutManager = LinearLayoutManager(requireContext())
 
