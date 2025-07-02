@@ -1,80 +1,214 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/pinkBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:gravity="center_horizontal">
+    android:padding="16dp">
 
-    <!-- Profile Image Placeholder -->
-    <ImageView
-        android:id="@+id/imageProfile"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="24dp"
-        android:src="@drawable/account_circle_40px"
-        android:scaleType="centerCrop"
-        android:background="@drawable/rounded_profile_bg"
-        android:padding="8dp"
-        android:contentDescription="profile"/>
-
-    <!-- User Info -->
-    <!-- Inside your LinearLayout -->
-
-    <TextView
-        android:id="@+id/textUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="User Name"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/inputUserName"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:hint="Enter Name"
-        android:visibility="gone"
-        android:layout_marginBottom="8dp" />
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/textUserEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="user@example.com"
-        android:textSize="16sp"
-        android:layout_marginBottom="24dp" />
+        <!-- Profile Image -->
+        <ImageView
+            android:id="@+id/imageProfile"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/account_circle_40px"
+            android:scaleType="centerCrop"
+            android:background="@drawable/rounded_profile_bg"
+            android:padding="8dp"
+            android:contentDescription="profile"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <EditText
-        android:id="@+id/inputUserEmail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter Email"
-        android:inputType="textEmailAddress"
-        android:visibility="gone"
-        android:layout_marginBottom="24dp" />
+        <!-- Editable field block example -->
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnEditProfile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Profile"
-        android:backgroundTint="@color/redIcon"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="16dp" />
+        <!-- Name -->
+        <EditText
+            android:id="@+id/editUserName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Your Name"
+            android:textSize="18sp"
+            android:enabled="false"
+            android:backgroundTint="@android:color/transparent"
+            android:inputType="textPersonName"
+            app:layout_constraintTop_toBottomOf="@+id/imageProfile"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:paddingTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconEditName" />
 
+        <ImageView
+            android:id="@+id/iconEditName"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/border_color_40px"
+            android:contentDescription="Edit Name"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="@id/editUserName"
+            app:layout_constraintBottom_toBottomOf="@id/editUserName"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Log Out Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log Out"
-        android:backgroundTint="@color/redIcon"
-        android:textColor="@android:color/white" />
+        <!-- Email -->
+        <EditText
+            android:id="@+id/editUserEmail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:textSize="18sp"
+            android:enabled="false"
+            android:backgroundTint="@android:color/transparent"
+            android:inputType="textEmailAddress"
+            app:layout_constraintTop_toBottomOf="@+id/editUserName"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:paddingTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconEditEmail" />
 
-</LinearLayout>
+        <ImageView
+            android:id="@+id/iconEditEmail"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/border_color_40px"
+            android:contentDescription="Edit Email"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="@id/editUserEmail"
+            app:layout_constraintBottom_toBottomOf="@id/editUserEmail"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Phone -->
+        <EditText
+            android:id="@+id/editUserPhone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Phone"
+            android:textSize="18sp"
+            android:enabled="false"
+            android:backgroundTint="@android:color/transparent"
+            android:inputType="phone"
+            app:layout_constraintTop_toBottomOf="@+id/editUserEmail"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:paddingTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconEditPhone" />
+
+        <ImageView
+            android:id="@+id/iconEditPhone"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/border_color_40px"
+            android:contentDescription="Edit Phone"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="@id/editUserPhone"
+            app:layout_constraintBottom_toBottomOf="@id/editUserPhone"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Gender -->
+        <EditText
+            android:id="@+id/editUserGender"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Gender"
+            android:textSize="18sp"
+            android:enabled="false"
+            android:backgroundTint="@android:color/transparent"
+            android:inputType="textPersonName"
+            app:layout_constraintTop_toBottomOf="@+id/editUserPhone"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:paddingTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconEditGender" />
+
+        <ImageView
+            android:id="@+id/iconEditGender"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/border_color_40px"
+            android:contentDescription="Edit Gender"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="@id/editUserGender"
+            app:layout_constraintBottom_toBottomOf="@id/editUserGender"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Address -->
+        <EditText
+            android:id="@+id/editUserAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Address"
+            android:textSize="18sp"
+            android:enabled="false"
+            android:backgroundTint="@android:color/transparent"
+            android:inputType="textPostalAddress"
+            app:layout_constraintTop_toBottomOf="@+id/editUserGender"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="8dp"
+            android:minHeight="48dp"
+            android:paddingTop="12dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconEditAddress" />
+
+        <ImageView
+            android:id="@+id/iconEditAddress"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/border_color_40px"
+            android:contentDescription="Edit Address"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="@id/editUserAddress"
+            app:layout_constraintBottom_toBottomOf="@id/editUserAddress"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Change Password -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangePassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Password"
+            android:backgroundTint="@color/redIcon"
+            android:textColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@+id/editUserAddress"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp" />
+
+        <!-- Logout -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Out"
+            android:backgroundTint="@color/redIcon"
+            android:textColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@+id/btnChangePassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="48dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
