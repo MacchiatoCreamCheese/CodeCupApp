@@ -14,6 +14,7 @@ import com.example.codecupapp.data.CartItem
 import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
+
 class DetailsFragment : Fragment() {
 
     private var _binding: FragmentDetailsBinding? = null
@@ -22,7 +23,7 @@ class DetailsFragment : Fragment() {
     private val cartViewModel: CartViewModel by activityViewModels()
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
 
-
+    // State Management
     private var quantity = 1
     private var shot = "Single"
     private var temperature = "Hot"
@@ -40,43 +41,60 @@ class DetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initializeUI()
+    }
 
+    /** Entry point to initialize all behaviors and bindings */
+    private fun initializeUI() {
+        setupBottomSheet()
+        setupQuantityButtons()
+        setupOptionSelectors()
+        setupCartActions()
+        observeCartChanges()
 
-
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.cartPreviewSheet).apply {
-            state = BottomSheetBehavior.STATE_HIDDEN
-            isDraggable = true
-
-            addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    binding.dimOverlay.visibility =
-                        if (newState == BottomSheetBehavior.STATE_HIDDEN) View.GONE else View.VISIBLE
-                }
-
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    binding.dimOverlay.alpha = slideOffset * 0.7f
-                    if (slideOffset > 0f) {
-                        binding.dimOverlay.visibility = View.VISIBLE
-                    }
-                }
-            })
-        }
-
-        binding.dimOverlay.setOnClickListener {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-        }
-
-
-        val coffeeName = arguments?.getString("coffeeName") ?: "Coffee"
-        binding.textCoffeeTitle.text = coffeeName
+        binding.textCoffeeTitle.text = arguments?.getString("coffeeName") ?: "Coffee"
         binding.textQuantity.text = quantity.toString()
+        updateTotal()
 
-        // Setup option buttons
-        setupOptionGroup(binding.shotGroup, listOf("Single", "Double")) { selected -> shot = selected }
-        setupOptionGroup(binding.tempGroup, listOf("Hot", "Iced")) { selected -> temperature = selected }
-        setupOptionGroup(binding.sizeGroup, listOf("Small", "Medium", "Large")) { selected -> size = selected }
-        setupOptionGroup(binding.iceGroup, listOf("No Ice", "Some Ice", "Full Ice")) { selected -> ice = selected }
+        if (!cartViewModel.cartItems.value.isNullOrEmpty()) {
+            showCartPreview(peek = true)
+        }
+    }
 
+    /** Configure Bottom Sheet behavior with animation + half-peek */
+    private fun setupBottomSheet() {
+        _binding?.let { binding ->
+            bottomSheetBehavior = BottomSheetBehavior.from(binding.cartPreviewSheet).apply {
+                isHideable = true
+                skipCollapsed = false
+                isDraggable = true
+
+                peekHeight = resources.getDimensionPixelSize(R.dimen.cart_peek_height)
+
+                addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                    override fun onStateChanged(bottomSheet: View, newState: Int) {
+                        val show = newState != BottomSheetBehavior.STATE_HIDDEN
+                        animateDimOverlay(show)
+                    }
+
+                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                        _binding?.let { safeBinding ->
+                            safeBinding.dimOverlay.alpha = slideOffset * 0.7f
+                            if (slideOffset > 0f) safeBinding.dimOverlay.visibility = View.VISIBLE
+                        }
+                    }
+                })
+            }
+
+            binding.dimOverlay.setOnClickListener {
+                hideCartPreview()
+            }
+        }
+    }
+
+
+    /** ➕/➖ Handle quantity selection and price update */
+    private fun setupQuantityButtons() {
         binding.btnPlus.setOnClickListener {
             quantity++
             binding.textQuantity.text = quantity.toString()
@@ -90,13 +108,23 @@ class DetailsFragment : Fragment() {
                 updateTotal()
             }
         }
+    }
 
-        updateTotal()
+    /** 🔘 Setup shot/temp/size/ice options */
+    private fun setupOptionSelectors() {
+        setupOptionGroup(binding.shotGroup, listOf("Single", "Double")) { shot = it }
+        setupOptionGroup(binding.tempGroup, listOf("Hot", "Iced")) { temperature = it }
+        setupOptionGroup(binding.sizeGroup, listOf("Small", "Medium", "Large")) { size = it }
+        setupOptionGroup(binding.iceGroup, listOf("No Ice", "Some Ice", "Full Ice")) {
+            ice = it
+        }
+    }
 
-        // ✅ Handle Add to Cart and show CartBottomSheet
+    /** 🛒 Add to cart, open preview, go to cart actions */
+    private fun setupCartActions() {
         binding.btnAddToCart.setOnClickListener {
             val item = CartItem(
-                name = coffeeName,
+                name = binding.textCoffeeTitle.text.toString(),
                 shot = shot,
                 temperature = temperature,
                 size = size,
@@ -104,23 +132,38 @@ class DetailsFragment : Fragment() {
                 quantity = quantity,
                 unitPrice = basePrice
             )
-
             cartViewModel.dispatch(CartAction.AddItem(item))
-
-            binding.recyclerCartPreview.adapter = CartPreviewAdapter(cartViewModel.cartItems.value.orEmpty())
-            binding.recyclerCartPreview.layoutManager = LinearLayoutManager(requireContext())
-
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            showCartPreview()
         }
 
-
         binding.btnGoToCart.setOnClickListener {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+            hideCartPreview()
             findNavController().navigate(R.id.cartFragment)
         }
     }
 
-    private fun setupOptionGroup(container: ViewGroup, options: List<String>, onSelected: (String) -> Unit) {
+    /** 🧠 Observe cart updates to refresh the preview */
+    private fun observeCartChanges() {
+        cartViewModel.cartItems.observe(viewLifecycleOwner) { cartItems ->
+            _binding?.let { binding ->
+                binding.recyclerCartPreview.adapter = CartPreviewAdapter(cartItems)
+                binding.recyclerCartPreview.layoutManager = LinearLayoutManager(requireContext())
+
+                if (cartItems.isNotEmpty()) {
+                    binding.cartPreviewSheet.visibility = View.VISIBLE
+                } else {
+                    hideCartPreview()
+                }
+            }
+        }
+    }
+
+    /** 🎨 Set of buttons (e.g., size, temp) and selected state highlight */
+    private fun setupOptionGroup(
+        container: ViewGroup,
+        options: List<String>,
+        onSelected: (String) -> Unit
+    ) {
         container.removeAllViews()
         options.forEach { option ->
             val button = Button(requireContext()).apply {
@@ -136,6 +179,7 @@ class DetailsFragment : Fragment() {
         updateSelection(container, options.first())
     }
 
+    /** 🔴 Visually highlight selected option */
     private fun updateSelection(container: ViewGroup, selected: String) {
         for (i in 0 until container.childCount) {
             val btn = container.getChildAt(i) as Button
@@ -148,14 +192,43 @@ class DetailsFragment : Fragment() {
         }
     }
 
+    /** 💵 Update price preview */
     private fun updateTotal() {
         val total = basePrice * quantity
         binding.textTotal.text = "Total: $%.2f".format(total)
     }
+
+    /** 👁 Show preview sheet (expanded or peek) */
+    private fun showCartPreview(peek: Boolean = false) {
+        bottomSheetBehavior.state =
+            if (peek) BottomSheetBehavior.STATE_COLLAPSED else BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    /** 👋 Hide preview and fade out dim overlay */
+    private fun hideCartPreview() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+    }
+
+    /** ✨ Animate the background dim overlay in/out */
+    private fun animateDimOverlay(show: Boolean) {
+        _binding?.let { binding ->
+            val alpha = if (show) 0.7f else 0f
+            binding.dimOverlay.animate()
+                .alpha(alpha)
+                .setDuration(300)
+                .withStartAction {
+                    if (show) binding.dimOverlay.visibility = View.VISIBLE
+                }
+                .withEndAction {
+                    if (!show) binding.dimOverlay.visibility = View.GONE
+                }
+                .start()
+        }
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
-

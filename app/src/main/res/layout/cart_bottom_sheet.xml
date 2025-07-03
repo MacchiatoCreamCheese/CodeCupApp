@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottomSheetLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,29 +9,38 @@
     android:padding="16dp"
     android:elevation="16dp">
 
+    <!-- Drag handle (optional for better UX) -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center"
+        android:background="@drawable/drag_handle"
+        android:layout_marginBottom="12dp" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Cart Preview"
         android:textStyle="bold"
         android:textSize="18sp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCartPreview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:overScrollMode="never"/>
+        android:overScrollMode="never" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConfirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Go to Cart"
+        style="@style/Widget.MaterialComponents.Button"
         android:backgroundTint="@color/redIcon"
+        android:textColor="@android:color/white"
         android:layout_marginTop="12dp"
-        android:textColor="@android:color/white"/>
+        app:cornerRadius="12dp" />
 </LinearLayout>
-
 
