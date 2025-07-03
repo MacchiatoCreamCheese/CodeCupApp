@@ -146,17 +146,23 @@ class HomeFragment : Fragment() {
                 val cupIcon = ImageView(requireContext()).apply {
                     setImageResource(
                         if (i <= count) R.drawable.local_cafe_40px__1_
-                        else R.drawable.local_cafe_40px // Use separate outline icon
+                        else R.drawable.local_cafe_40px
                     )
+
                     val size = 48.dp
-                    layoutParams = ViewGroup.MarginLayoutParams(size, size).apply {
-                        setMargins(12, 12, 12, 12)
+                    layoutParams = GridLayout.LayoutParams().apply {
+                        width = size
+                        height = size
+                        setMargins(20, 20, 20, 20)
+                        rowSpec = GridLayout.spec((i - 1) / 4)
+                        columnSpec = GridLayout.spec((i - 1) % 4)
                     }
                 }
                 gridLayout.addView(cupIcon)
             }
         }
     }
+
 
 
 

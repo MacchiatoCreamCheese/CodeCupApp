@@ -139,6 +139,8 @@ class DetailsFragment : Fragment() {
                 unitPrice = basePrice
             )
             cartViewModel.dispatch(CartAction.AddItem(item))
+            val totalCount = cartViewModel.cartItems.value.orEmpty().sumOf { it.quantity }
+            (activity as? MainActivity)?.updateCartBadge(totalCount)
             showCartPreview()
         }
 
