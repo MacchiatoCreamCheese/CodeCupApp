@@ -5,8 +5,10 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
 
@@ -18,44 +20,38 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun loadProfile() {
-        ProfileRepository.loadUserProfile(
-            onComplete = { profile ->
+        viewModelScope.launch {
+            try {
+                val profile = ProfileRepository.loadUserProfileSuspend()
                 _userProfile.value = profile
-            },
-            onError = { error ->
-                Log.e("ProfileViewModel", "Error: $error")
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error loading profile: ${e.message}")
             }
-        )
+        }
     }
 
 
     fun updateProfile(
         updated: UserData,
-        onSuccess: () -> Unit = {},
-        onFailure: () -> Unit = {}
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
     ) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            onFailure(Exception("Not signed in"))
+            return
+        }
 
-        val updateMap = mapOf(
-            "name" to updated.name,
-            "email" to updated.email,
-            "phone" to updated.phone,
-            "gender" to updated.gender,
-            "address" to updated.address
-        )
-
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .set(updateMap)
+        FirebaseFirestore.getInstance().collection("users")
+            .document(user.uid)
+            .set(updated)
             .addOnSuccessListener {
-                _userProfile.value = updated
+                loadProfile()
                 onSuccess()
             }
-            .addOnFailureListener {
-                onFailure()
-            }
+            .addOnFailureListener { onFailure(it) }
     }
+
 }
 
 

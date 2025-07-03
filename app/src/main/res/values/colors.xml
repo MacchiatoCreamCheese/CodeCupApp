@@ -9,6 +9,8 @@
     <color name="white">#FFFFFFFF</color>
 
 
+    <color name="border_normal">#9E9E9E</color>
+    <color name="border_editing">#FF000000</color>
 
     <color name="pinkBackground">#FFF1F3</color>
     <color name="cardPink">#F8DADB</color>

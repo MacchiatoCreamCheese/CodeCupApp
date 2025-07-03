@@ -12,27 +12,33 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.codecupapp.databinding.ActivityMainBinding
 import com.example.codecupapp.data.CoffeePointsConfig
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    // View binding for layout
     private lateinit var binding: ActivityMainBinding
+
+    // Jetpack Navigation
     private lateinit var navController: NavController
 
-    // Shared ViewModel
+    // Shared ViewModel for cart data
     private val cartViewModel: CartViewModel by viewModels()
 
+    // Menu toggle state
     private var isExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ Use ViewBinding
+        // ✅ Inflate layout with ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 🔁 Return to HomeFragment when intent triggers
+        // 🔁 If triggered from splash, return to homeFragment
         if (intent.getBooleanExtra("startFromHome", false)) {
             Handler(Looper.getMainLooper()).post {
                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
@@ -40,25 +46,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ⚙️ Setup user config and load profile
+        // ☕ Init default coffee point config (e.g., reward point rules)
         CoffeePointsConfig.initializeDefaults()
 
-        ProfileRepository.loadUserProfile(
-            onComplete = { Log.d("LoadProfile", "Profile loaded into UserData") },
-            onError = { errorMsg -> Log.e("LoadProfile", "Failed to load profile: $errorMsg") }
-        )
+        // 🔄 Load user profile using coroutine
+        lifecycleScope.launch {
+            try {
+                val profile = ProfileRepository.loadUserProfileSuspend()
+                Log.d("MainActivity", "User profile loaded: $profile")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to load profile: ${e.message}")
+            }
+        }
 
-        setupToolbar()
-        setupNavigation()
-        observeCartUpdates()
-        setupMenuButtons()
+        setupToolbar()         // 🔧 Setup app top bar and expand buttons
+        setupNavigation()      // 🧭 Setup nav controller, bottom bar, and routing logic
+        observeCartUpdates()   // 🛒 Sync cart badge with cart state
+        setupMenuButtons()     // ❓ Hook help/info buttons
     }
 
-    /** 🧭 Navigation and Bottom Nav setup */
+    /** 🧭 Configure Navigation UI and reactions */
     private fun setupNavigation() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
 
+        // Define top-level fragments for app bar config
         val appBarConfig = AppBarConfiguration(
             setOf(
                 R.id.homeFragment,
@@ -72,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfig)
 
-        // 🧭 Bottom nav item click
+        // Handle bottom navigation taps
         binding.bottomNav.setOnItemSelectedListener { item ->
             if (item.itemId != navController.currentDestination?.id) {
                 navController.navigate(item.itemId)
@@ -80,16 +92,15 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // 👈 Back or Profile Icon
+        // 👈 Handle left icon (back or profile)
         binding.btnLeft.setOnClickListener {
-            if (navController.currentDestination?.id in setOf(R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment)) {
-                navController.navigateUp()
-            } else {
-                navController.navigate(R.id.profileFragment)
+            when (navController.currentDestination?.id) {
+                R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment -> navController.navigateUp()
+                else -> navController.navigate(R.id.profileFragment)
             }
         }
 
-        // 🧠 Update nav visibility and icon dynamically
+        // 🎯 Handle destination changes to show/hide UI parts
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val isAuth = destination.id == R.id.authFragment
             val isHome = destination.id == R.id.homeFragment
@@ -97,43 +108,44 @@ class MainActivity : AppCompatActivity() {
             binding.toolbar.visibility = if (isAuth) View.GONE else View.VISIBLE
             binding.btnExpand.visibility = if (isAuth) View.GONE else View.VISIBLE
             binding.bottomNav.visibility = if (isAuth) View.GONE else View.VISIBLE
-
             binding.btnCartFloating.visibility = if (isHome) View.VISIBLE else View.GONE
             binding.badgeCount.visibility =
                 if (isHome && binding.badgeCount.text.toString() != "0") View.VISIBLE else View.GONE
 
-            // Change left button icon
-            if (destination.id in setOf(R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment)) {
-                binding.btnLeft.setImageResource(R.drawable.back_arrow)
-            } else {
-                binding.btnLeft.setImageResource(R.drawable.account_circle_40px)
-            }
+            // Swap icon (👤 profile or ⬅ back)
+            val isBackContext = destination.id in setOf(R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment)
+            binding.btnLeft.setImageResource(
+                if (isBackContext) R.drawable.back_arrow else R.drawable.account_circle_40px
+            )
 
-            // Highlight correct nav item
-            when (destination.id) {
-                R.id.homeFragment -> binding.bottomNav.menu.findItem(R.id.homeFragment).isChecked = true
-                R.id.ordersFragment -> binding.bottomNav.menu.findItem(R.id.ordersFragment).isChecked = true
-                R.id.rewardsFragment -> binding.bottomNav.menu.findItem(R.id.rewardsFragment).isChecked = true
-                R.id.profileFragment -> binding.bottomNav.menu.findItem(R.id.profileFragment).isChecked = true
-                R.id.redeemFragment -> binding.bottomNav.menu.findItem(R.id.rewardsFragment).isChecked = true
-                else -> binding.bottomNav.menu.findItem(R.id.homeFragment).isChecked = true
-            }
+            // ✅ Highlight selected bottom nav item
+            binding.bottomNav.menu.findItem(
+                when (destination.id) {
+                    R.id.homeFragment -> R.id.homeFragment
+                    R.id.ordersFragment -> R.id.ordersFragment
+                    R.id.rewardsFragment -> R.id.rewardsFragment
+                    R.id.profileFragment -> R.id.profileFragment
+                    R.id.redeemFragment -> R.id.rewardsFragment
+                    else -> R.id.homeFragment
+                }
+            ).isChecked = true
         }
 
+        // 🌟 Logo returns to home
         binding.btnLogo.setOnClickListener {
             navController.navigate(R.id.homeFragment)
         }
 
+        // 🛒 Cart buttons
         binding.btnCart.setOnClickListener {
             navController.navigate(R.id.cartFragment)
         }
-
         binding.btnCartFloating.setOnClickListener {
             navController.navigate(R.id.cartFragment)
         }
     }
 
-    /** 🛒 Observe cart data and update badge */
+    /** 🛒 Observe cart and update badge */
     private fun observeCartUpdates() {
         cartViewModel.cartItems.observe(this) { items ->
             val count = items.sumOf { it.quantity }
@@ -141,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 🔔 Update floating cart badge visibility */
+    /** 🔔 Update badge visibility for floating cart icon */
     fun updateCartBadge(count: Int) {
         val badgeText = count.toString()
         binding.badgeCount.text = badgeText
@@ -150,8 +162,7 @@ class MainActivity : AppCompatActivity() {
         binding.badgeCount.visibility = if (isHome && badgeText != "0") View.VISIBLE else View.GONE
     }
 
-
-    /** 🔧 Top bar, expand toggle, and help/info buttons */
+    /** 🔧 Setup toolbar with expand/collapse menu logic */
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
 
@@ -161,7 +172,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** ❓ Info/help button click handlers */
+    /** ❓ Help and Info click handlers */
     private fun setupMenuButtons() {
         binding.btnHelp.setOnClickListener {
             navController.navigate(R.id.helpFragment)
@@ -171,8 +182,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /** 🔙 Enable action bar up navigation */
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }
-

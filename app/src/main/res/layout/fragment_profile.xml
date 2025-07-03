@@ -27,6 +27,21 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Editable field block example -->
+        <!-- Email display -->
+        <TextView
+            android:id="@+id/textUserEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="user@email.com"
+            android:textColor="@color/greyIcon"
+            android:textSize="18sp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toBottomOf="@+id/imageProfile"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
 
         <!-- Name -->
         <EditText
@@ -38,9 +53,9 @@
             android:enabled="false"
             android:backgroundTint="@android:color/transparent"
             android:inputType="textPersonName"
-            app:layout_constraintTop_toBottomOf="@+id/imageProfile"
+            app:layout_constraintTop_toBottomOf="@+id/textUserEmail"
             android:layout_marginTop="28dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="18dp"
             android:minHeight="48dp"
             android:paddingTop="12dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -59,36 +74,6 @@
             app:layout_constraintBottom_toBottomOf="@id/editUserName"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Email -->
-        <EditText
-            android:id="@+id/editUserEmail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="Email"
-            android:textSize="18sp"
-            android:enabled="false"
-            android:backgroundTint="@android:color/transparent"
-            android:inputType="textEmailAddress"
-            app:layout_constraintTop_toBottomOf="@+id/editUserName"
-            android:layout_marginTop="30dp"
-            android:layout_marginEnd="8dp"
-            android:minHeight="48dp"
-            android:paddingTop="12dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/iconEditEmail" />
-
-        <ImageView
-            android:id="@+id/iconEditEmail"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="10dp"
-            android:src="@drawable/border_color_40px"
-            android:contentDescription="Edit Email"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintTop_toTopOf="@id/editUserEmail"
-            app:layout_constraintBottom_toBottomOf="@id/editUserEmail"
-            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Phone -->
         <EditText
@@ -100,7 +85,7 @@
             android:enabled="false"
             android:backgroundTint="@android:color/transparent"
             android:inputType="phone"
-            app:layout_constraintTop_toBottomOf="@+id/editUserEmail"
+            app:layout_constraintTop_toBottomOf="@+id/iconEditName"
             android:layout_marginTop="30dp"
             android:layout_marginEnd="8dp"
             android:minHeight="48dp"

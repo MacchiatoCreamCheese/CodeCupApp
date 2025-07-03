@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.codecupapp.databinding.FragmentAuthBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class AuthFragment : Fragment() {
 
@@ -132,14 +134,16 @@ class AuthFragment : Fragment() {
 
         auth.signInWithEmailAndPassword(emailVal, passwordVal)
             .addOnSuccessListener {
-                ProfileRepository.loadUserProfile(
-                    onComplete = {
+                lifecycleScope.launch {
+                    try {
+                        val userData = ProfileRepository.loadUserProfileSuspend()
+                        // ✅ Use the profile if needed
                         findNavController().navigate(R.id.homeFragment)
-                    },
-                    onError = { errorMsg ->
-                        Toast.makeText(requireContext(), "Failed to load: $errorMsg", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
-                )
+                }
+
             }
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Login failed: ${it.message}", Toast.LENGTH_SHORT).show()

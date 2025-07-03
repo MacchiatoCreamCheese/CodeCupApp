@@ -20,14 +20,30 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.core.content.ContextCompat
+import android.animation.ValueAnimator
+import android.animation.ArgbEvaluator
+import android.content.Context
+import android.graphics.drawable.GradientDrawable
+
 
 class ProfileFragment : Fragment() {
 
+    // View Binding
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+
+    // ViewModel for user profile
     private val profileViewModel: ProfileViewModel by viewModels()
+
+    // Tracks unsaved state
     private var isDirty = false
 
+    // Tracks currently editing field & its icon
+    private var currentlyEditingField: EditText? = null
+    private var currentEditIcon: View? = null
+
+    // Inflate layout
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,49 +52,24 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    // Setup lifecycle logic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
 
         checkAuthenticationOrRedirect()
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    if (isDirty) {
-                        AlertDialog.Builder(requireContext())
-                            .setTitle("Unsaved Changes")
-                            .setMessage("Do you want to save changes before leaving?")
-                            .setPositiveButton("Save") { _, _ ->
-                                saveChangesToFirestore()
-                                isDirty = false
-                                findNavController().popBackStack()
-                            }
-                            .setNegativeButton("Discard") { _, _ ->
-                                isDirty = false
-                                findNavController().popBackStack()
-                            }
-                            .show()
-                    } else {
-                        findNavController().popBackStack()
-                    }
-                }
-            }
-        )
+        handleBackNavigation()
 
-        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
-            binding.editUserName.setText(profile.name)
-            binding.editUserEmail.setText(profile.email)
-            binding.editUserPhone.setText(profile.phone)
-            binding.editUserGender.setText(profile.gender)
-            binding.editUserAddress.setText(profile.address)
-            disableAllFields()
-        }
+        observeUserProfile()
 
         profileViewModel.loadProfile()
         setEditListeners()
     }
 
+    /**
+     * 🔒 If user is not logged in, redirect to auth screen.
+     */
     private fun checkAuthenticationOrRedirect() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
@@ -87,11 +78,44 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * 🧠 Observes profile LiveData and updates fields.
+     */
+    private fun observeUserProfile() {
+        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            binding.editUserName.setText(profile.name)
+            binding.editUserPhone.setText(profile.phone)
+            binding.editUserGender.setText(profile.gender)
+            binding.editUserAddress.setText(profile.address)
+            disableAllFields()
+        }
+    }
 
+    /**
+     * 🔙 Intercept system back button for unsaved changes.
+     */
+    private fun handleBackNavigation() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isDirty && currentlyEditingField != null) {
+                        promptToSaveOrDiscard {
+                            findNavController().popBackStack()
+                        }
+                    } else {
+                        findNavController().popBackStack()
+                    }
+                }
+            }
+        )
+    }
+
+    /**
+     * 🔒 Disable all input fields until editing is triggered.
+     */
     private fun disableAllFields() {
         listOf(
             binding.editUserName,
-            binding.editUserEmail,
             binding.editUserPhone,
             binding.editUserGender,
             binding.editUserAddress
@@ -101,67 +125,92 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * 🖊 Setup individual edit icon click listeners.
+     */
     private fun setEditListeners() {
-        binding.iconEditName.setOnClickListener {
-            enableAndFocus(binding.editUserName) {
-                isDirty = true
-                saveChangesToFirestore()
-            }
-        }
+        setToggleEdit(binding.editUserName, binding.iconEditName)
+        setToggleEdit(binding.editUserPhone, binding.iconEditPhone)
+        setToggleEdit(binding.editUserGender, binding.iconEditGender)
+        setToggleEdit(binding.editUserAddress, binding.iconEditAddress)
 
-        binding.iconEditEmail.setOnClickListener {
-            enableAndFocus(binding.editUserEmail) {
-                isDirty = true
-                saveChangesToFirestore()
-            }
-        }
-
-        binding.iconEditPhone.setOnClickListener {
-            enableAndFocus(binding.editUserPhone) {
-                isDirty = true
-                saveChangesToFirestore()
-            }
-        }
-
-        binding.iconEditGender.setOnClickListener {
-            enableAndFocus(binding.editUserGender) {
-                isDirty = true
-                saveChangesToFirestore()
-            }
-        }
-
-        binding.iconEditAddress.setOnClickListener {
-            enableAndFocus(binding.editUserAddress) {
-                isDirty = true
-                saveChangesToFirestore()
-            }
-        }
-
-        binding.btnChangePassword.setOnClickListener {
-            showPasswordChangeDialog()
-        }
-
-        binding.btnLogout.setOnClickListener {
-            logoutUser()
-        }
+        binding.btnChangePassword.setOnClickListener { showPasswordChangeDialog() }
+        binding.btnLogout.setOnClickListener { logoutUser() }
     }
 
-    private fun enableAndFocus(editText: EditText, onEdit: () -> Unit) {
-        editText.isEnabled = true
-        editText.requestFocus()
-        editText.setSelection(editText.text.length)
-        editText.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                onEdit()
-                editText.isEnabled = false
+    /**
+     * 🖊 Tapping the icon:
+     *  - If not editing: enables the field.
+     *  - If editing same field: saves changes and disables.
+     *  - If editing another: asks to save or discard current first.
+     */
+    private fun setToggleEdit(editText: EditText, icon: View) {
+        icon.setOnClickListener {
+            when {
+                currentlyEditingField == null -> {
+                    editText.isEnabled = true
+                    editText.requestFocus()
+                    editText.setSelection(editText.text.length)
+                    currentlyEditingField = editText
+                    currentEditIcon = icon
+                    isDirty = true
+                    //animateBorder(editText, true)
+                }
+
+                currentlyEditingField == editText -> {
+                    editText.isEnabled = false
+                    saveChangesToFirestore()
+                    //animateBorder(editText, false)
+                    currentlyEditingField = null
+                    currentEditIcon = null
+                    isDirty = false
+                }
+
+                else -> {
+                    promptToSaveOrDiscard {
+                        currentlyEditingField?.isEnabled = false
+                        //currentlyEditingField?.let { animateBorder(it, false) }
+
+                        editText.isEnabled = true
+                        editText.requestFocus()
+                        editText.setSelection(editText.text.length)
+                        currentlyEditingField = editText
+                        currentEditIcon = icon
+                        isDirty = true
+                        //animateBorder(editText, true)
+                    }
+                }
             }
         }
+
     }
 
+    /**
+     * 📥 Alert dialog: Save or Discard unsaved data.
+     */
+    private fun promptToSaveOrDiscard(onDiscard: () -> Unit) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Unsaved Changes")
+            .setMessage("You have unsaved changes. Save or discard?")
+            .setPositiveButton("Save") { _, _ ->
+                saveChangesToFirestore()
+                isDirty = false
+                currentlyEditingField?.isEnabled = false
+                currentlyEditingField = null
+                currentEditIcon = null
+            }
+            .setNegativeButton("Discard") { _, _ ->
+                onDiscard()
+            }
+            .show()
+    }
+
+    /**
+     * ☁️ Send updated profile data to Firestore.
+     */
     private fun saveChangesToFirestore() {
         val updated = UserData(
             name = binding.editUserName.text.toString().trim(),
-            email = binding.editUserEmail.text.toString().trim(),
             phone = binding.editUserPhone.text.toString().trim(),
             gender = binding.editUserGender.text.toString().trim(),
             address = binding.editUserAddress.text.toString().trim()
@@ -170,15 +219,21 @@ class ProfileFragment : Fragment() {
         profileViewModel.updateProfile(
             updated = updated,
             onSuccess = {
-                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+                }
             },
             onFailure = {
-                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
+                }
             }
         )
-
     }
 
+    /**
+     * 🔐 Show password change dialog with re-auth.
+     */
     private fun showPasswordChangeDialog() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
@@ -210,11 +265,10 @@ class ProfileFragment : Fragment() {
             .setPositiveButton("Save") { _, _ ->
                 val oldPass = inputOld.text.toString()
                 val newPass = inputNew.text.toString()
-
                 val email = user.email
+
                 if (email != null) {
                     val credential = EmailAuthProvider.getCredential(email, oldPass)
-
                     lifecycleScope.launch(Dispatchers.IO) {
                         user.reauthenticate(credential)
                             .addOnSuccessListener {
@@ -236,11 +290,48 @@ class ProfileFragment : Fragment() {
             .show()
     }
 
+    /**
+     * 🚪 Logout and redirect to auth screen.
+     */
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
         findNavController().navigate(R.id.authFragment)
     }
 
+
+/*
+*
+*  private fun animateBorder(editText: EditText, isEditing: Boolean) {
+        val fromColor = ContextCompat.getColor(
+            requireContext(),
+            if (isEditing) R.color.border_normal else R.color.border_editing
+        )
+        val toColor = ContextCompat.getColor(
+            requireContext(),
+            if (isEditing) R.color.border_editing else R.color.border_normal
+        )
+
+        val background = editText.background
+        if (background is GradientDrawable) {
+            val animator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
+                duration = 300
+                addUpdateListener { valueAnimator ->
+                    val color = valueAnimator.animatedValue as Int
+                    background.setStroke(2.dpToPx(requireContext()), color)
+                }
+            }
+            animator.start()
+        }
+    }
+    fun Int.dpToPx(context: Context): Int =
+        (this * context.resources.displayMetrics.density).toInt()
+*
+* */
+
+
+    /**
+     * 🧼 Clear view binding to prevent memory leaks.
+     */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
