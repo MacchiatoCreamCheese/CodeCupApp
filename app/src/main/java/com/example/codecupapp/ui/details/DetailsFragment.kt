@@ -78,11 +78,17 @@ class DetailsFragment : Fragment() {
                     }
 
                     override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        _binding?.let { safeBinding ->
-                            safeBinding.dimOverlay.alpha = slideOffset * 0.7f
-                            if (slideOffset > 0f) safeBinding.dimOverlay.visibility = View.VISIBLE
+                        _binding?.let { binding ->
+                            binding.dimOverlay.alpha = slideOffset * 0.7f
+                            if (slideOffset > 0f) {
+                                binding.dimOverlay.visibility = View.VISIBLE
+                                binding.btnAddToCart.visibility = View.GONE // Hide when bottom sheet slides up
+                            } else {
+                                binding.btnAddToCart.visibility = View.VISIBLE // Show again
+                            }
                         }
                     }
+
                 })
             }
 

@@ -43,7 +43,11 @@ class CartViewModel : ViewModel() {
                 _cartItems.value = currentItems
             }
             is CartAction.RemoveItem -> {
-                _cartItems.value = _cartItems.value.orEmpty().filter { it.name != action.item.name }
+                _cartItems.value = _cartItems.value.orEmpty().filter { it.name != action.item.name ||
+                        it.shot != action.item.shot ||
+                        it.temperature != action.item.temperature ||
+                        it.size != action.item.size ||
+                        it.ice != action.item.ice}
             }
             is CartAction.UpdateQuantity -> {
                 val updated = _cartItems.value.orEmpty().map {

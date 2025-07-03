@@ -117,20 +117,29 @@
     </ScrollView>
 
     <!-- ✅ FloatingActionButton should be direct child of CoordinatorLayout -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/btnAddToCart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="bottom|end"
-        android:layout_margin="20dp"
-        android:text="Add to Cart"
-        android:contentDescription="Add to cart"
-        android:backgroundTint="@color/redIcon"
-        android:textColor="@android:color/white"
-        app:icon="@drawable/hand_package_40px"
-        app:iconTint="@android:color/white"
-        app:iconPadding="8dp"
-        app:iconGravity="start" />
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/btnAddToCart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:text="Add to Cart"
+            android:contentDescription="Add to cart"
+            android:backgroundTint="@color/redIcon"
+            android:textColor="@android:color/white"
+            app:icon="@drawable/hand_package_40px"
+            app:iconTint="@android:color/white"
+            app:iconPadding="8dp"
+            app:iconGravity="start" />
+    </FrameLayout>
+
 
 
     <!-- Dimmed Overlay -->
