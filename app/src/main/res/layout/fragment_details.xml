@@ -1,151 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     android:background="@color/pinkBackground">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <!-- Scrollable content -->
+    <ScrollView
+        android:id="@+id/detailsScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-        <!-- Large Image Placeholder -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/offWhite"
-            android:elevation="4dp" />
-
-        <!-- Coffee Name and Quantity -->
         <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/textCoffeeTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Coffee"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+            <!-- Large Image Placeholder -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"
+                android:background="@color/offWhite"
+                android:elevation="4dp" />
 
+            <!-- Coffee Name and Quantity -->
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/btnMinus"
-                    android:text="–"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/redIcon"/>
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
 
                 <TextView
-                    android:id="@+id/textQuantity"
-                    android:text="1"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/textCoffeeTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:padding="8dp" />
+                    android:text="Coffee"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btnPlus"
-                    android:text="+"
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/btnMinus"
+                        android:text="–"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/redIcon"/>
+
+                    <TextView
+                        android:id="@+id/textQuantity"
+                        android:text="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="8dp" />
+
+                    <Button
+                        android:id="@+id/btnPlus"
+                        android:text="+"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/redIcon"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Options -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Shot" android:textStyle="bold" android:layout_marginTop="8dp" android:layout_marginBottom="4dp" />
+            <LinearLayout android:id="@+id/shotGroup" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Temperature" android:textStyle="bold" android:layout_marginTop="8dp" android:layout_marginBottom="4dp" />
+            <LinearLayout android:id="@+id/tempGroup" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Size" android:textStyle="bold" android:layout_marginTop="8dp" android:layout_marginBottom="4dp" />
+            <LinearLayout android:id="@+id/sizeGroup" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ice" android:textStyle="bold" android:layout_marginTop="8dp" android:layout_marginBottom="4dp" />
+            <LinearLayout android:id="@+id/iceGroup" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp" />
+
+            <!-- Total and Add Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textTotal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/redIcon"/>
+                    android:text="Total: $3.00"
+                    android:textStyle="bold"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:backgroundTint="@color/redIcon"
+                    android:text="Add to Cart" />
             </LinearLayout>
 
         </LinearLayout>
+    </ScrollView>
 
-        <!-- Shot Selection -->
+    <!-- Dimmed overlay -->
+    <View
+        android:id="@+id/dimOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone" />
+
+    <!-- Draggable Bottom Sheet -->
+    <LinearLayout
+        android:id="@+id/cartPreviewSheet"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@drawable/rounded_bottom_nav"
+        android:padding="16dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:text="Cart Preview"
             android:layout_height="wrap_content"
-            android:text="Shot"
+            android:layout_width="match_parent"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <LinearLayout
-            android:id="@+id/shotGroup"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCartPreview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="never" />
 
-        <!-- Temperature Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Temperature"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:id="@+id/tempGroup"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Size Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Size"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:id="@+id/sizeGroup"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Ice Selection -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ice"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:id="@+id/iceGroup"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Total and Add Button -->
-        <LinearLayout
+        <Button
+            android:id="@+id/btnGoToCart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:layout_marginTop="24dp">
-
-            <TextView
-                android:id="@+id/textTotal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total: $3.00"
-                android:textStyle="bold"
-                android:textSize="18sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddToCart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/redIcon"
-                android:text="Add to Cart"
-                style="@style/Widget.MaterialComponents.Button" />
-        </LinearLayout>
-
+            android:text="Go to Cart"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/redIcon"
+            android:textColor="@android:color/white" />
     </LinearLayout>
-</ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

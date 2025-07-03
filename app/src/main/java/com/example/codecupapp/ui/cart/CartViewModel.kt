@@ -24,8 +24,8 @@ class CartViewModel : ViewModel() {
     fun dispatch(action: CartAction) {
         when (action) {
             is CartAction.AddItem -> {
-                val updated = _cartItems.value.orEmpty().toMutableList()
-                val existing = updated.find {
+                val currentItems = _cartItems.value.orEmpty().toMutableList()
+                val existingItemIndex = currentItems.indexOfFirst {
                     it.name == action.item.name &&
                             it.shot == action.item.shot &&
                             it.temperature == action.item.temperature &&
@@ -33,12 +33,14 @@ class CartViewModel : ViewModel() {
                             it.ice == action.item.ice
                 }
 
-                if (existing != null) {
-                    updated[updated.indexOf(existing)] = existing.copy(quantity = existing.quantity + action.item.quantity)
+                if (existingItemIndex >= 0) {
+                    val existing = currentItems[existingItemIndex]
+                    currentItems[existingItemIndex] = existing.copy(quantity = existing.quantity + action.item.quantity)
                 } else {
-                    updated.add(action.item)
+                    currentItems.add(action.item)
                 }
-                _cartItems.value = updated
+
+                _cartItems.value = currentItems
             }
             is CartAction.RemoveItem -> {
                 _cartItems.value = _cartItems.value.orEmpty().filter { it.name != action.item.name }
