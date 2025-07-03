@@ -11,7 +11,8 @@
         android:id="@+id/detailsScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="6dp">
+        android:padding="6dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -80,66 +81,179 @@
             </LinearLayout>
 
             <!-- Option Groups -->
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Shot" android:textStyle="bold" />
-            <LinearLayout android:id="@+id/shotGroup"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp" android:orientation="horizontal" />
+            <!-- Group: Size -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp">
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Temperature" android:textStyle="bold" />
-            <LinearLayout android:id="@+id/tempGroup"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp" android:orientation="horizontal" />
+                <TextView
+                    android:id="@+id/labelSize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Size"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/sizeGroup"
+                    android:layout_marginEnd="16dp"/>
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Size" android:textStyle="bold" />
-            <LinearLayout android:id="@+id/sizeGroup"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp" android:orientation="horizontal" />
+                <LinearLayout
+                    android:id="@+id/sizeGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/labelSize"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Ice" android:textStyle="bold" />
-            <LinearLayout android:id="@+id/iceGroup"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp" android:orientation="horizontal" />
 
-            <!-- Total Price -->
-            <TextView
-                android:id="@+id/textTotal"
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:id="@+id/labelIce"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ice"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/iceGroup"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:id="@+id/iceGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/labelIce"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:id="@+id/labelTemp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Temp"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/tempGroup"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:id="@+id/tempGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/labelTemp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Group: Shot -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp">
+
+                <TextView
+                    android:id="@+id/labelShot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shot"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/shotGroup"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:id="@+id/shotGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/labelShot"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <!-- Total + Add to Cart Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Total: $3.00"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_marginBottom="32dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp">
+
+                <!-- Total Text -->
+                <TextView
+                    android:id="@+id/textTotal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Total: $3.00"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#AC0000" />
+
+                <!-- Add to Cart Button -->
+                <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add to Cart"
+                    android:contentDescription="Add to cart"
+                    android:backgroundTint="@color/redIcon"
+                    android:textColor="@android:color/white"
+                    app:icon="@drawable/hand_package_40px"
+                    app:iconTint="@android:color/white"
+                    app:iconPadding="8dp"
+                    app:iconGravity="start"
+                    android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+
+
         </LinearLayout>
     </ScrollView>
-
-    <!-- ✅ FloatingActionButton should be direct child of CoordinatorLayout -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom|end"
-        android:clipChildren="false"
-        android:clipToPadding="false">
-
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/btnAddToCart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="20dp"
-            android:text="Add to Cart"
-            android:contentDescription="Add to cart"
-            android:backgroundTint="@color/redIcon"
-            android:textColor="@android:color/white"
-            app:icon="@drawable/hand_package_40px"
-            app:iconTint="@android:color/white"
-            app:iconPadding="8dp"
-            app:iconGravity="start" />
-    </FrameLayout>
-
 
 
     <!-- Dimmed Overlay -->
@@ -165,7 +279,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Cart Preview"
-            android:textSize="18sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 

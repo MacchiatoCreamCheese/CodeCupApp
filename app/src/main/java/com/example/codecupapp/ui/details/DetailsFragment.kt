@@ -1,11 +1,19 @@
 package com.example.codecupapp
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.text.TextUtils
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -13,6 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.codecupapp.data.CartItem
 import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 
 
 class DetailsFragment : Fragment() {
@@ -55,6 +66,16 @@ class DetailsFragment : Fragment() {
         binding.textCoffeeTitle.text = arguments?.getString("coffeeName") ?: "Coffee"
         binding.textQuantity.text = quantity.toString()
         updateTotal()
+
+        val itemName = arguments?.getString("coffeeName") ?: "Coffee"
+        binding.textCoffeeTitle.text = itemName
+
+        val hideShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea") // Customize
+        if (itemName in hideShotFor) {
+            binding.shotGroup.parent?.let { groupParent ->
+                (groupParent as? View)?.visibility = View.GONE
+            }
+        }
 
         if (!cartViewModel.cartItems.value.isNullOrEmpty()) {
             showCartPreview(peek = true)
@@ -118,17 +139,154 @@ class DetailsFragment : Fragment() {
 
     /** 🔘 Setup shot/temp/size/ice options */
     private fun setupOptionSelectors() {
-        setupOptionGroup(binding.shotGroup, listOf("Single", "Double")) { shot = it }
-        setupOptionGroup(binding.tempGroup, listOf("Hot", "Iced")) { temperature = it }
-        setupOptionGroup(binding.sizeGroup, listOf("Small", "Medium", "Large")) { size = it }
-        setupOptionGroup(binding.iceGroup, listOf("No Ice", "Some Ice", "Full Ice")) {
-            ice = it
+        setupIconWithLabelGroup(
+            binding.sizeGroup,
+            listOf(
+                Triple("Small", R.drawable.water_full_40px, 28f),
+                Triple("Medium", R.drawable.water_full_40px, 36f),
+                Triple("Large", R.drawable.water_full_40px, 44f)
+            )
+        ) { size = it
+            updateTotal()
+        }
+        setupIconWithLabelGroup(
+            binding.tempGroup,
+            listOf(
+                Triple("Hot", R.drawable.windshield_heat_front_40px, 32f),
+                Triple("Iced", R.drawable.ac_unit_40px, 32f),
+            ),
+        ) { temperature = it }
+
+        setupIconWithLabelGroup(
+            binding.iceGroup,
+            listOf(
+                Triple("No Ice", R.drawable.block_40px, 32f),
+                Triple("Some Ice", R.drawable.deployed_code_40px, 32f),
+                Triple("Full Ice", R.drawable.deployed_code_40px, 39f)
+            )
+        ) { ice = it }
+        setupIconWithLabelGroup(
+            binding.shotGroup,
+            listOf(
+                Triple("Single", R.drawable.local_cafe_40px, 32f),
+                Triple("Double", R.drawable.local_cafe_40px__1_, 32f)
+            )
+        ) { shot = it }
+    }
+
+
+    private fun setupIconWithLabelGroup(
+        container: ViewGroup,
+        options: List<Triple<String, Int, Float>>, // Label, Icon, IconSizeDp
+        onSelected: (String) -> Unit
+    ) {
+        container.removeAllViews()
+        var selected = options.first().first
+
+        options.forEach { (label, iconRes, sizeDp) ->
+            val imageView = ImageView(requireContext()).apply {
+                setImageResource(iconRes)
+                layoutParams = LinearLayout.LayoutParams(
+                    dpToPx(sizeDp).toInt(),
+                    dpToPx(sizeDp).toInt()
+                ).apply {
+                    gravity = Gravity.CENTER_HORIZONTAL
+                }
+                setColorFilter(Color.BLACK)
+                tag = label
+            }
+
+            val textView = TextView(requireContext()).apply {
+                text = label
+                textSize = 12f
+                gravity = Gravity.CENTER
+                setTextColor(Color.BLACK)
+                maxLines = 2
+                setPadding(4, 4, 4, 0)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    gravity = Gravity.CENTER_HORIZONTAL
+                    width = dpToPx(64f).toInt() // 👈 constrain label width to wrap under icon
+                }
+            }
+            textView.ellipsize = TextUtils.TruncateAt.END
+            textView.maxLines = 2
+
+            val itemLayout = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginEnd = dpToPx(12f).toInt()
+                }
+                setPadding(16, 16, 16, 16)
+                isClickable = true
+                isFocusable = true
+                background = ContextCompat.getDrawable(context, R.drawable.chip_unselected_bg)
+
+                setOnClickListener {
+                    selected = label
+                    onSelected(label)
+                    updateIconGroupSelection(container, label)
+                }
+
+                addView(imageView)
+                addView(textView)
+            }
+
+            container.addView(itemLayout)
+        }
+
+        onSelected(selected)
+        updateIconGroupSelection(container, selected)
+    }
+
+
+    private fun dpToPx(dp: Float): Float {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            resources.displayMetrics
+        )
+    }
+
+    private fun updateIconGroupSelection(container: ViewGroup, selectedLabel: String) {
+        for (i in 0 until container.childCount) {
+            val layout = container.getChildAt(i) as LinearLayout
+            val icon = layout.getChildAt(0) as ImageView
+            val label = layout.getChildAt(1) as TextView
+            val isSelected = icon.tag == selectedLabel
+
+            val color = if (isSelected) R.color.redIcon else android.R.color.transparent
+            val tint = if (isSelected) Color.WHITE else Color.BLACK
+
+            layout.setBackgroundResource(if (isSelected) R.drawable.chip_selected_bg else R.drawable.chip_unselected_bg)
+            layout.setPadding(24, 16, 24, 16)
+            layout.backgroundTintList = ContextCompat.getColorStateList(requireContext(), color)
+
+            icon.setColorFilter(tint)
+            label.setTextColor(tint)
         }
     }
+
+
+
+
 
     /** 🛒 Add to cart, open preview, go to cart actions */
     private fun setupCartActions() {
         binding.btnAddToCart.setOnClickListener {
+            val sizeAdjustment = when (size) {
+                "Medium" -> 1.5
+                "Large" -> 3.0
+                else -> 0.0
+            }
+            val adjustedPrice = basePrice + sizeAdjustment
+
             val item = CartItem(
                 name = binding.textCoffeeTitle.text.toString(),
                 shot = shot,
@@ -136,7 +294,7 @@ class DetailsFragment : Fragment() {
                 size = size,
                 ice = ice,
                 quantity = quantity,
-                unitPrice = basePrice
+                unitPrice = adjustedPrice // ✅ Now includes size pricing!
             )
             cartViewModel.dispatch(CartAction.AddItem(item))
             val totalCount = cartViewModel.cartItems.value.orEmpty().sumOf { it.quantity }
@@ -166,26 +324,7 @@ class DetailsFragment : Fragment() {
         }
     }
 
-    /** 🎨 Set of buttons (e.g., size, temp) and selected state highlight */
-    private fun setupOptionGroup(
-        container: ViewGroup,
-        options: List<String>,
-        onSelected: (String) -> Unit
-    ) {
-        container.removeAllViews()
-        options.forEach { option ->
-            val button = Button(requireContext()).apply {
-                text = option
-                setOnClickListener {
-                    onSelected(option)
-                    updateSelection(container, option)
-                }
-            }
-            container.addView(button)
-        }
-        onSelected(options.first())
-        updateSelection(container, options.first())
-    }
+
 
     /** 🔴 Visually highlight selected option */
     private fun updateSelection(container: ViewGroup, selected: String) {
@@ -202,9 +341,17 @@ class DetailsFragment : Fragment() {
 
     /** 💵 Update price preview */
     private fun updateTotal() {
-        val total = basePrice * quantity
+        val adjustedPrice = when (size) {
+            "Medium" -> basePrice + 1.5
+            "Large" -> basePrice + 3.0
+            else -> basePrice
+        }
+
+        val total = adjustedPrice * quantity
         binding.textTotal.text = "Total: $%.2f".format(total)
     }
+
+
 
     /** 👁 Show preview sheet (expanded or peek) */
     private fun showCartPreview(peek: Boolean = false) {
