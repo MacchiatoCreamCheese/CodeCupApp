@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.codecupapp.databinding.FragmentAuthBinding
-import com.example.codecupapp.repository.ProfileRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -34,21 +33,14 @@ class AuthFragment : Fragment() {
         Log.d("AuthFragment", "AuthFragment started")
 
         auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
 
-        // 🔐 Auto-login if already authenticated
-        view.post {
-            auth.currentUser?.let {
-                ProfileRepository.loadUserProfile(
-                    onComplete = {
-                        findNavController().navigate(R.id.homeFragment)
-                    },
-                    onError = { errorMsg ->
-                        Toast.makeText(requireContext(), "Failed to load: $errorMsg", Toast.LENGTH_SHORT).show()
-                    }
-                )
-
-            }
+        if (currentUser != null) {
+            // Optional: guard again, though splash should skip this already
+            findNavController().navigate(R.id.homeFragment)
+            return
         }
+
 
 
         binding.btnSignInMode.setOnClickListener {

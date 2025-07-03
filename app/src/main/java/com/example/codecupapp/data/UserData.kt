@@ -1,11 +1,11 @@
-object UserData {
-    var name = ""
-    var phone = ""
-    var email = ""
-    var gender = ""
-    var address = ""
-    var points = 0
+data class UserData(
+    var name: String = "",
+    var email: String = "",
+    var phone: String = "",
+    var gender: String = "",
+    var address: String = "",
+    var points: Int = 0,
+)
 
-}
 
 

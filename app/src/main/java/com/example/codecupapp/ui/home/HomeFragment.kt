@@ -20,6 +20,9 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
+    private val profileViewModel: ProfileViewModel by activityViewModels()
+
+
 
     private var dots = arrayOfNulls<ImageView>(3)
     var selectedAddressType: String = "Deliver" // Default selection
@@ -44,7 +47,11 @@ class HomeFragment : Fragment() {
         }
 
         binding.textGreeting.text = greeting
-        binding.textUsername.text = UserData.name + "."
+
+        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            binding.textUsername.text = "${profile.name}."
+        }
+
 
         val promoList = listOf(
             R.drawable.promo1,

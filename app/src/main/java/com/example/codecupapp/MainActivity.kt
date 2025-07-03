@@ -2,6 +2,8 @@ package com.example.codecupapp
 
 import UserData
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.ImageButton
@@ -10,15 +12,13 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.codecupapp.data.CoffeePointsConfig
-import com.example.codecupapp.repository.ProfileRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,7 +36,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-
+        if (intent.getBooleanExtra("startFromHome", false)) {
+            Handler(Looper.getMainLooper()).post {
+                val navHostFragment =
+                    supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+                val navController = navHostFragment.navController
+                navController.navigate(R.id.homeFragment)
+            }
+        }
 
         CoffeePointsConfig.initializeDefaults()
 

@@ -1,5 +1,6 @@
 package com.example.codecupapp
 
+import UserData
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -11,15 +12,12 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.codecupapp.databinding.FragmentProfileBinding
-import com.example.codecupapp.repository.ProfileRepository
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,6 +25,7 @@ class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private val profileViewModel: ProfileViewModel by viewModels()
     private var isDirty = false
 
     override fun onCreateView(
@@ -42,6 +41,7 @@ class ProfileFragment : Fragment() {
         _binding = FragmentProfileBinding.bind(view)
 
         checkAuthenticationOrRedirect()
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -66,14 +66,17 @@ class ProfileFragment : Fragment() {
             }
         )
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                loadUserInfo()
-                setEditListeners()
-            }
+        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            binding.editUserName.setText(profile.name)
+            binding.editUserEmail.setText(profile.email)
+            binding.editUserPhone.setText(profile.phone)
+            binding.editUserGender.setText(profile.gender)
+            binding.editUserAddress.setText(profile.address)
+            disableAllFields()
         }
 
-
+        profileViewModel.loadProfile()
+        setEditListeners()
     }
 
     private fun checkAuthenticationOrRedirect() {
@@ -82,22 +85,6 @@ class ProfileFragment : Fragment() {
             Toast.makeText(requireContext(), "Please log in to access your profile.", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.authFragment)
         }
-    }
-
-    private fun loadUserInfo() {
-        ProfileRepository.loadUserProfile(
-            onComplete = {
-                binding.editUserName.setText(UserData.name)
-                binding.editUserEmail.setText(UserData.email)
-                binding.editUserPhone.setText(UserData.phone)
-                binding.editUserGender.setText(UserData.gender)
-                binding.editUserAddress.setText(UserData.address)
-                disableAllFields()
-            },
-            onError = { errorMsg ->
-                Toast.makeText(requireContext(), "Failed to load profile: $errorMsg", Toast.LENGTH_SHORT).show()
-            }
-        )
     }
 
 
@@ -172,24 +159,24 @@ class ProfileFragment : Fragment() {
     }
 
     private fun saveChangesToFirestore() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseFirestore.getInstance()
-
-        val updatedProfile = mapOf(
-            "name" to binding.editUserName.text.toString().trim(),
-            "email" to binding.editUserEmail.text.toString().trim(),
-            "phone" to binding.editUserPhone.text.toString().trim(),
-            "gender" to binding.editUserGender.text.toString().trim(),
-            "address" to binding.editUserAddress.text.toString().trim()
+        val updated = UserData(
+            name = binding.editUserName.text.toString().trim(),
+            email = binding.editUserEmail.text.toString().trim(),
+            phone = binding.editUserPhone.text.toString().trim(),
+            gender = binding.editUserGender.text.toString().trim(),
+            address = binding.editUserAddress.text.toString().trim()
         )
 
-        db.collection("users").document(userId).set(updatedProfile)
-            .addOnSuccessListener {
+        profileViewModel.updateProfile(
+            updated = updated,
+            onSuccess = {
                 Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
+            },
+            onFailure = {
                 Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
             }
+        )
+
     }
 
     private fun showPasswordChangeDialog() {
@@ -251,11 +238,6 @@ class ProfileFragment : Fragment() {
 
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
-        UserData.name = "Guest"
-        UserData.email = "guest@example.com"
-        UserData.phone = ""
-        UserData.gender = ""
-        UserData.address = ""
         findNavController().navigate(R.id.authFragment)
     }
 

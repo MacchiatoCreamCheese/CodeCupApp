@@ -1,16 +1,20 @@
 
-package com.example.codecupapp.repository
+package com.example.codecupapp
 
+import UserData
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 object ProfileRepository {
 
-    fun loadUserProfile(onComplete: (() -> Unit)? = null, onError: ((String) -> Unit)? = null) {
+    fun loadUserProfile(
+        onComplete: (UserData) -> Unit,
+        onError: (String) -> Unit = {}
+    ) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
-            onError?.invoke("User not signed in")
+            onError("User not signed in")
             return
         }
 
@@ -19,21 +23,24 @@ object ProfileRepository {
             .get()
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
-                    UserData.name = doc.getString("name") ?: "Guest"
-                    UserData.email = doc.getString("email") ?: ""
-                    UserData.phone = doc.getString("phone") ?: ""
-                    UserData.gender = doc.getString("gender") ?: ""
-                    UserData.address = doc.getString("address") ?: ""
+                    val profile = UserData(
+                        name = doc.getString("name") ?: "Guest",
+                        email = doc.getString("email") ?: "",
+                        phone = doc.getString("phone") ?: "",
+                        gender = doc.getString("gender") ?: "",
+                        address = doc.getString("address") ?: ""
+                    )
 
-                    Log.d("ProfileRepo", "User profile loaded")
+                    Log.d("ProfileRepo", "User profile loaded: $profile")
+                    onComplete(profile)
                 } else {
                     Log.w("ProfileRepo", "No profile found")
+                    onError("No profile found")
                 }
-                onComplete?.invoke()
             }
             .addOnFailureListener {
                 Log.e("ProfileRepo", "Error loading profile: ${it.message}")
-                onError?.invoke(it.message ?: "Unknown error")
+                onError(it.message ?: "Unknown error")
             }
     }
 }
