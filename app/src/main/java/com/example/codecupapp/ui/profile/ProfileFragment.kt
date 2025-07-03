@@ -8,12 +8,18 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.codecupapp.databinding.FragmentProfileBinding
+import com.example.codecupapp.repository.ProfileRepository
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -21,6 +27,7 @@ class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private var isDirty = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -28,6 +35,45 @@ class ProfileFragment : Fragment() {
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentProfileBinding.bind(view)
+
+        checkAuthenticationOrRedirect()
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isDirty) {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Unsaved Changes")
+                            .setMessage("Do you want to save changes before leaving?")
+                            .setPositiveButton("Save") { _, _ ->
+                                saveChangesToFirestore()
+                                isDirty = false
+                                findNavController().popBackStack()
+                            }
+                            .setNegativeButton("Discard") { _, _ ->
+                                isDirty = false
+                                findNavController().popBackStack()
+                            }
+                            .show()
+                    } else {
+                        findNavController().popBackStack()
+                    }
+                }
+            }
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                loadUserInfo()
+                setEditListeners()
+            }
+        }
+
+
     }
 
     private fun checkAuthenticationOrRedirect() {
@@ -38,25 +84,22 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        checkAuthenticationOrRedirect()
-
-        view.post {
-            loadUserInfo()
-            setEditListeners()
-        }
-    }
-
     private fun loadUserInfo() {
-        binding.editUserName.setText(UserData.name)
-        binding.editUserEmail.setText(UserData.email)
-        binding.editUserPhone.setText(UserData.phone)
-        binding.editUserGender.setText(UserData.gender)
-        binding.editUserAddress.setText(UserData.address)
-
-        // Disable fields initially
-        disableAllFields()
+        ProfileRepository.loadUserProfile(
+            onComplete = {
+                binding.editUserName.setText(UserData.name)
+                binding.editUserEmail.setText(UserData.email)
+                binding.editUserPhone.setText(UserData.phone)
+                binding.editUserGender.setText(UserData.gender)
+                binding.editUserAddress.setText(UserData.address)
+                disableAllFields()
+            },
+            onError = { errorMsg ->
+                Toast.makeText(requireContext(), "Failed to load profile: $errorMsg", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
+
 
     private fun disableAllFields() {
         listOf(
@@ -65,40 +108,45 @@ class ProfileFragment : Fragment() {
             binding.editUserPhone,
             binding.editUserGender,
             binding.editUserAddress
-        ).forEach { editText ->
-            editText.isEnabled = false
-            editText.setBackgroundTintList(null)
+        ).forEach {
+            it.isEnabled = false
+            it.setBackgroundTintList(null)
         }
     }
 
     private fun setEditListeners() {
         binding.iconEditName.setOnClickListener {
-            enableAndFocus(binding.editUserName) { newValue ->
-                UserData.name = newValue
+            enableAndFocus(binding.editUserName) {
+                isDirty = true
+                saveChangesToFirestore()
             }
         }
 
         binding.iconEditEmail.setOnClickListener {
-            enableAndFocus(binding.editUserEmail) { newValue ->
-                UserData.email = newValue
+            enableAndFocus(binding.editUserEmail) {
+                isDirty = true
+                saveChangesToFirestore()
             }
         }
 
         binding.iconEditPhone.setOnClickListener {
-            enableAndFocus(binding.editUserPhone) { newValue ->
-                UserData.phone = newValue
+            enableAndFocus(binding.editUserPhone) {
+                isDirty = true
+                saveChangesToFirestore()
             }
         }
 
         binding.iconEditGender.setOnClickListener {
-            enableAndFocus(binding.editUserGender) { newValue ->
-                UserData.gender = newValue
+            enableAndFocus(binding.editUserGender) {
+                isDirty = true
+                saveChangesToFirestore()
             }
         }
 
         binding.iconEditAddress.setOnClickListener {
-            enableAndFocus(binding.editUserAddress) { newValue ->
-                UserData.address = newValue
+            enableAndFocus(binding.editUserAddress) {
+                isDirty = true
+                saveChangesToFirestore()
             }
         }
 
@@ -111,22 +159,37 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun enableAndFocus(editText: EditText, onSave: (String) -> Unit) {
+    private fun enableAndFocus(editText: EditText, onEdit: () -> Unit) {
         editText.isEnabled = true
         editText.requestFocus()
         editText.setSelection(editText.text.length)
-
-        editText.setOnFocusChangeListener { v, hasFocus ->
+        editText.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                val newValue = editText.text.toString().trim()
-                if (newValue.isNotEmpty()) {
-                    onSave(newValue)
-                    editText.isEnabled = false
-                } else {
-                    Toast.makeText(requireContext(), "Field cannot be empty", Toast.LENGTH_SHORT).show()
-                }
+                onEdit()
+                editText.isEnabled = false
             }
         }
+    }
+
+    private fun saveChangesToFirestore() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        val updatedProfile = mapOf(
+            "name" to binding.editUserName.text.toString().trim(),
+            "email" to binding.editUserEmail.text.toString().trim(),
+            "phone" to binding.editUserPhone.text.toString().trim(),
+            "gender" to binding.editUserGender.text.toString().trim(),
+            "address" to binding.editUserAddress.text.toString().trim()
+        )
+
+        db.collection("users").document(userId).set(updatedProfile)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun showPasswordChangeDialog() {
@@ -154,17 +217,15 @@ class ProfileFragment : Fragment() {
         layout.addView(inputOld)
         layout.addView(inputNew)
 
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle("Change Password")
             .setView(layout)
             .setPositiveButton("Save") { _, _ ->
                 val oldPass = inputOld.text.toString()
                 val newPass = inputNew.text.toString()
 
-                val user = FirebaseAuth.getInstance().currentUser
-                val email = user?.email
-
-                if (user != null && email != null) {
+                val email = user.email
+                if (email != null) {
                     val credential = EmailAuthProvider.getCredential(email, oldPass)
 
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -182,8 +243,6 @@ class ProfileFragment : Fragment() {
                                 Toast.makeText(requireContext(), "Incorrect password", Toast.LENGTH_SHORT).show()
                             }
                     }
-                } else {
-                    Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -191,14 +250,12 @@ class ProfileFragment : Fragment() {
     }
 
     private fun logoutUser() {
-        UserData.points = 0
+        FirebaseAuth.getInstance().signOut()
         UserData.name = "Guest"
         UserData.email = "guest@example.com"
         UserData.phone = ""
         UserData.gender = ""
         UserData.address = ""
-
-        requireActivity().getSharedPreferences("AppPrefs", 0).edit().clear().apply()
         findNavController().navigate(R.id.authFragment)
     }
 

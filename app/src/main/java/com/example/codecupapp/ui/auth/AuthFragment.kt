@@ -1,111 +1,162 @@
-package com.example.codecupapp.ui.auth
+package com.example.codecupapp
 
-import CCAccount
 import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.TextView
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.codecupapp.R
-import com.google.android.material.button.MaterialButton
+import com.example.codecupapp.databinding.FragmentAuthBinding
+import com.example.codecupapp.repository.ProfileRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
+class AuthFragment : Fragment() {
 
-
-class AuthFragment : Fragment(R.layout.fragment_auth) {
+    private var _binding: FragmentAuthBinding? = null
+    private val binding get() = _binding!!
 
     private var isLoginMode = false
+    private lateinit var auth: FirebaseAuth
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAuthBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.d("AuthFragment", "AuthFragment started")
 
-        val textTitle = view.findViewById<TextView>(R.id.textTitle)
-        val inputName = view.findViewById<EditText>(R.id.inputName)
-        val inputPhone = view.findViewById<EditText>(R.id.inputPhone)
-        val inputEmail = view.findViewById<EditText>(R.id.inputEmail)
-        val inputGender = view.findViewById<EditText>(R.id.inputGender)
-        val inputAddress = view.findViewById<EditText>(R.id.inputAddress)
-        val inputPassword = view.findViewById<EditText>(R.id.inputPassword)
-        val btnSignInMode = view.findViewById<MaterialButton>(R.id.btnSignInMode)
-        val btnLoginMode = view.findViewById<MaterialButton>(R.id.btnLoginMode)
+        auth = FirebaseAuth.getInstance()
 
-        btnSignInMode.setOnClickListener {
+        // 🔐 Auto-login if already authenticated
+        view.post {
+            auth.currentUser?.let {
+                ProfileRepository.loadUserProfile(
+                    onComplete = {
+                        findNavController().navigate(R.id.homeFragment)
+                    },
+                    onError = { errorMsg ->
+                        Toast.makeText(requireContext(), "Failed to load: $errorMsg", Toast.LENGTH_SHORT).show()
+                    }
+                )
+
+            }
+        }
+
+
+        binding.btnSignInMode.setOnClickListener {
             if (isLoginMode) {
-                switchToSignIn(textTitle, inputName, inputPhone, inputGender, inputAddress)
+                switchToSignIn()
             } else {
-                performSignIn(inputName, inputPhone, inputEmail, inputGender, inputAddress, inputPassword)
+                performSignIn()
             }
         }
 
-        btnLoginMode.setOnClickListener {
+        binding.btnLoginMode.setOnClickListener {
             if (!isLoginMode) {
-                switchToLogin(textTitle, inputName, inputPhone, inputGender, inputAddress)
+                switchToLogin()
             } else {
-                performLogin(inputPhone, inputPassword)
+                performLogin()
             }
         }
     }
 
-    private fun switchToLogin(title: TextView, name: EditText, phone: EditText, gender: EditText, address: EditText) {
+    private fun switchToLogin() {
         isLoginMode = true
-        title.text = "Log in"
-        name.visibility = View.GONE
-        gender.visibility = View.GONE
-        address.visibility = View.GONE
+        binding.textTitle.text = "Log in"
+        binding.inputName.visibility = View.GONE
+        binding.inputPhone.visibility = View.GONE
+        binding.inputGender.visibility = View.GONE
+        binding.inputAddress.visibility = View.GONE
     }
 
-    private fun switchToSignIn(title: TextView, name: EditText, phone: EditText, gender: EditText, address: EditText) {
+    private fun switchToSignIn() {
         isLoginMode = false
-        title.text = "Sign in"
-        name.visibility = View.VISIBLE
-        gender.visibility = View.VISIBLE
-        address.visibility = View.VISIBLE
+        binding.textTitle.text = "Sign in"
+        binding.inputName.visibility = View.VISIBLE
+        binding.inputPhone.visibility = View.VISIBLE
+        binding.inputGender.visibility = View.VISIBLE
+        binding.inputAddress.visibility = View.VISIBLE
     }
 
-    private fun performSignIn(name: EditText, phone: EditText, email: EditText, gender: EditText, address: EditText, password: EditText) {
-        val nameVal = name.text.toString().trim()
-        val phoneVal = phone.text.toString().trim()
-        val emailVal = email.text.toString().trim()
-        val genderVal = gender.text.toString().trim()
-        val addressVal = address.text.toString().trim()
-        val passwordVal = password.text.toString().trim()
+    private fun performSignIn() {
+        val nameVal = binding.inputName.text.toString().trim()
+        val phoneVal = binding.inputPhone.text.toString().trim()
+        val emailVal = binding.inputEmail.text.toString().trim()
+        val genderVal = binding.inputGender.text.toString().trim()
+        val addressVal = binding.inputAddress.text.toString().trim()
+        val passwordVal = binding.inputPassword.text.toString().trim()
 
         if (listOf(nameVal, phoneVal, emailVal, genderVal, addressVal, passwordVal).any { it.isEmpty() }) {
             Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
-        if (UserData.accounts.any { it.phone == phoneVal }) {
-            Toast.makeText(requireContext(), "Phone already registered", Toast.LENGTH_SHORT).show()
-            return
-        }
-        UserData.accounts.add(CCAccount(nameVal, phoneVal, emailVal, genderVal, addressVal, passwordVal))
-        Toast.makeText(requireContext(), "Account created! Please Log in.", Toast.LENGTH_SHORT).show()
-        switchToLogin(requireView().findViewById(R.id.textTitle), name, phone, gender, address)
+
+        auth.createUserWithEmailAndPassword(emailVal, passwordVal)
+            .addOnSuccessListener {
+                val user = FirebaseAuth.getInstance().currentUser
+                if (user != null) {
+                    val uid = user.uid
+                    val profile = mapOf(
+                        "name" to nameVal,
+                        "email" to emailVal,
+                        "phone" to phoneVal,
+                        "gender" to genderVal,
+                        "address" to addressVal
+                    )
+                    FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(uid)
+                        .set(profile)
+                        .addOnSuccessListener {
+                            Toast.makeText(requireContext(), "Account created!", Toast.LENGTH_SHORT).show()
+                            findNavController().navigate(R.id.homeFragment)
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), "Failed to save profile: ${it.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
-    private fun performLogin(phone: EditText, password: EditText) {
-        val phoneVal = phone.text.toString().trim()
-        val passwordVal = password.text.toString().trim()
+    private fun performLogin() {
+        val emailVal = binding.inputEmail.text.toString().trim()
+        val passwordVal = binding.inputPassword.text.toString().trim()
 
-        val user = UserData.accounts.find { it.phone == phoneVal && it.password == passwordVal }
-        if (user == null) {
-            Toast.makeText(requireContext(), "Incorrect credentials", Toast.LENGTH_SHORT).show()
+        if (emailVal.isEmpty() || passwordVal.isEmpty()) {
+            Toast.makeText(requireContext(), "Email and password required", Toast.LENGTH_SHORT).show()
             return
         }
 
-        UserData.name = user.name
-        UserData.phone = user.phone
-        UserData.email = user.email
-        UserData.gender = user.gender
-        UserData.address = user.address
+        auth.signInWithEmailAndPassword(emailVal, passwordVal)
+            .addOnSuccessListener {
+                ProfileRepository.loadUserProfile(
+                    onComplete = {
+                        findNavController().navigate(R.id.homeFragment)
+                    },
+                    onError = { errorMsg ->
+                        Toast.makeText(requireContext(), "Failed to load: $errorMsg", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Login failed: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
 
-        val prefs = requireActivity().getSharedPreferences("AppPrefs", 0)
-        prefs.edit().apply {
-            putString("username", UserData.name)
-            putString("email", UserData.email)
-            putBoolean("logged_in", true)
-            apply()
-        }
-        findNavController().navigate(R.id.homeFragment)
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

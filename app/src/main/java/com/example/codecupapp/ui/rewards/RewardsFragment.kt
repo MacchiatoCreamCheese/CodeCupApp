@@ -1,6 +1,7 @@
 package com.example.codecupapp
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
@@ -14,15 +15,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.codecupapp.databinding.FragmentRewardsBinding
 
 
-class RewardsFragment : Fragment(R.layout.fragment_rewards) {
+class RewardsFragment : Fragment() {
 
     private var _binding: FragmentRewardsBinding? = null
     private val binding get() = _binding!!
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentRewardsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val rewardsViewModel: RewardsViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         _binding = FragmentRewardsBinding.bind(view)
 
         val gridLayout = view.findViewById<GridLayout>(R.id.loyaltyGridLayout)

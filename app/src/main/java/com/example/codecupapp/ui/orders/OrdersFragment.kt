@@ -1,7 +1,9 @@
 package com.example.codecupapp
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -13,15 +15,25 @@ import com.google.android.material.button.MaterialButton
 
 
 
-class OrdersFragment : Fragment(R.layout.fragment_orders) {
+class OrdersFragment : Fragment() {
+
+    private var _binding: FragmentOrdersBinding? = null
+    private val binding get() = _binding!!
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentOrdersBinding.inflate(inflater, container, false)
+        return binding.root
+    }
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
 
     private lateinit var ordersAdapter: OrdersAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
-
-    private var _binding: FragmentOrdersBinding? = null
-    private val binding get() = _binding!!
 
 
     private var showingOngoing = true

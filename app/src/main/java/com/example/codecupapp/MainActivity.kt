@@ -2,6 +2,7 @@ package com.example.codecupapp
 
 import UserData
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -13,8 +14,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.example.codecupapp.data.CoffeePointsConfig
+import com.example.codecupapp.repository.ProfileRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,7 +40,14 @@ class MainActivity : AppCompatActivity() {
 
         CoffeePointsConfig.initializeDefaults()
 
-
+        ProfileRepository.loadUserProfile(
+            onComplete = {
+                Log.d("LoadProfile", "Profile loaded into UserData")
+            },
+            onError = { errorMsg ->
+                Log.e("LoadProfile", "Failed to load profile: $errorMsg")
+            }
+        )
 
 
 
@@ -148,17 +159,6 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.infoFragment)
         }
 
-        val prefs = getSharedPreferences("AppPrefs", 0)
-        if (prefs.getBoolean("logged_in", false)) {
-            UserData.name = prefs.getString("username", "Guest") ?: "Guest"
-            UserData.email = prefs.getString("email", "guest@example.com") ?: "guest@example.com"
-
-            val navHost = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
-            val navController = navHost.navController
-
-            // Force Navigate to Home if logged in
-            navController.navigate(R.id.homeFragment)
-        }
     }
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()

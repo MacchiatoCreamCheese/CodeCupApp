@@ -1,7 +1,9 @@
 package com.example.codecupapp
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
@@ -10,10 +12,19 @@ import androidx.navigation.fragment.findNavController
 import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.example.codecupapp.data.CartItem
 
-class DetailsFragment : Fragment(R.layout.fragment_details) {
+class DetailsFragment : Fragment() {
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentDetailsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     private val cartViewModel: CartViewModel by activityViewModels()
 
@@ -25,6 +36,7 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
     private var basePrice = 3.00
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         _binding = FragmentDetailsBinding.bind(view)
 
         val coffeeName = arguments?.getString("coffeeName") ?: "Coffee"

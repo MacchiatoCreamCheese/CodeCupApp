@@ -1,7 +1,9 @@
 package com.example.codecupapp
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,16 +16,27 @@ import com.example.codecupapp.data.CoffeePointsConfig
 import com.example.codecupapp.data.OrderItem
 import com.example.codecupapp.databinding.FragmentCartBinding
 
-class CartFragment : Fragment(R.layout.fragment_cart) {
+class CartFragment : Fragment() {
 
     private var _binding: FragmentCartBinding? = null
     private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentCartBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     private val rewardsViewModel: RewardsViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
     private val cartViewModel: CartViewModel by activityViewModels()
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCartBinding.bind(view)
 
         binding.recyclerCart.layoutManager = LinearLayoutManager(requireContext())

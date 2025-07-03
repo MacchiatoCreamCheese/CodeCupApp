@@ -84,7 +84,7 @@ class HomeFragment : Fragment() {
 
         binding.recyclerBestSeller.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerBestSeller.adapter = CoffeeAdapter(
-            listOf("Americano", "Mocha", "Pumpkin Spice", "Taco Milktea")
+            listOf("Americano", "Mocha", "Pumpkin Spice", "Taco Milktea", "Egg Coffee")
         ) { selectedCoffee ->
             openDetails(selectedCoffee)
         }
