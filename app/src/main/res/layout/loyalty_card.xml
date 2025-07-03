@@ -6,7 +6,7 @@
     android:gravity="center"
     android:layout_margin="16dp"
     android:padding="12dp"
-    android:background="@color/cardPink"
+    android:background="@drawable/round_border_red"
     android:elevation="4dp">
 
     <!-- Loyalty Card Title -->
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:columnCount="4"
-        android:alignmentMode="alignMargins"
-        android:padding="19dp" />
+        android:alignmentMode="alignBounds"
+        android:padding="5dp" />
 
 </LinearLayout>

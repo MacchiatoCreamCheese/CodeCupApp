@@ -28,8 +28,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Go to Cart"
+        android:backgroundTint="@color/redIcon"
         android:layout_marginTop="12dp"
-        android:backgroundTint="@color/button_toggle_selector"
         android:textColor="@android:color/white"/>
 </LinearLayout>
 

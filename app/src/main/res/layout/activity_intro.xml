@@ -7,9 +7,9 @@
         android:id="@+id/fullscreenImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/group_31"
         android:backgroundTint="@color/cardPink"
-        android:contentDescription="Intro Image" />
+        android:contentDescription="Intro Image"
+        android:scaleType="centerCrop"
+        android:src="@drawable/group_31" />
 
 </FrameLayout>

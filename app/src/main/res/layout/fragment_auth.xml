@@ -1,79 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="@color/pinkBackground">
+    android:background="@color/pinkBackground"
+    android:padding="24dp">
 
     <LinearLayout
         android:id="@+id/authContainer"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
             android:id="@+id/textTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Sign in"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#AC0000"
             android:layout_marginBottom="24dp" />
 
-        <!-- Shared Fields -->
         <EditText
             android:id="@+id/inputName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:inputType="textPersonName"
             android:hint="Name"
+            android:padding="15dp"
             android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/inputPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
             android:hint="Phone number"
             android:inputType="phone"
+            android:padding="15dp"
             android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/inputEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
             android:hint="Email"
             android:inputType="textEmailAddress"
+            android:padding="15dp"
             android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/inputGender"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
             android:hint="Gender"
+            android:padding="15dp"
             android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/inputAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
             android:hint="Address"
+            android:padding="15dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Password Field -->
         <EditText
             android:id="@+id/inputPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
             android:hint="Password"
             android:inputType="textPassword"
+            android:padding="15dp"
             android:layout_marginBottom="24dp" />
 
         <LinearLayout
@@ -87,18 +89,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign in"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="@color/cardPink"
-                android:textColor="@color/black" />
+                android:backgroundTint="@color/button_toggle_selector"
+                android:textColor="@color/black"
+                android:layout_marginEnd="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLoginMode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Log in"
-                android:backgroundTint="@color/redIcon"
-                android:textColor="@android:color/white" />
+                android:backgroundTint="@color/button_toggle_selector"
+                android:textColor="@android:color/black"
+                />
 
         </LinearLayout>
     </LinearLayout>
-</ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

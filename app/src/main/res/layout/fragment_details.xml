@@ -53,8 +53,10 @@
                         android:id="@+id/btnMinus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/redIcon"
-                        android:text="–" />
+                        android:backgroundTint="@color/button_toggle_selector"
+                        android:text="–"
+                        android:textColor="@color/black"
+                        android:textSize="24dp"/>
 
                     <TextView
                         android:id="@+id/textQuantity"
@@ -63,14 +65,17 @@
                         android:padding="8dp"
                         android:text="1"
                         android:textAlignment="center"
-                        android:textSize="20dp" />
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
 
                     <Button
                         android:id="@+id/btnPlus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/redIcon"
-                        android:text="+" />
+                        android:backgroundTint="@color/button_toggle_selector"
+                        android:text="+"
+                        android:textColor="@color/black"
+                        android:textSize="24dp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -158,7 +163,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:backgroundTint="@color/redIcon"
-                    android:text="Add to Cart" />
+                    android:text="Add to Cart"
+                    android:textColor="@color/white"/>
             </LinearLayout>
 
         </LinearLayout>
