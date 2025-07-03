@@ -3,7 +3,7 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/cardPink"
+    android:background="@drawable/round_border_red"
     android:padding="12dp"
     android:layout_marginBottom="12dp"
     android:elevation="4dp"
