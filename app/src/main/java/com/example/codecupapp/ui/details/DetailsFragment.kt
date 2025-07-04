@@ -63,24 +63,28 @@ class DetailsFragment : Fragment() {
         setupCartActions()
         observeCartChanges()
 
-        binding.textCoffeeTitle.text = arguments?.getString("coffeeName") ?: "Coffee"
+        val args = arguments
+        val itemName = args?.getString("coffeeName") ?: "Coffee"
+        val imageResId = args?.getInt("coffeeImageResId") ?: R.drawable.local_cafe_40px__1_
+        val price = args?.getDouble("coffeePrice") ?: 3.00
+
+        basePrice = price // 🟢 update base price for size calculation
+        binding.textCoffeeTitle.text = itemName
+        binding.imageCoffee.setImageResource(imageResId)
         binding.textQuantity.text = quantity.toString()
         updateTotal()
 
-        val itemName = arguments?.getString("coffeeName") ?: "Coffee"
-        binding.textCoffeeTitle.text = itemName
-
-        val hideShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea") // Customize
+        // Hide shot group for some drinks
+        val hideShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
         if (itemName in hideShotFor) {
-            binding.shotGroup.parent?.let { groupParent ->
-                (groupParent as? View)?.visibility = View.GONE
-            }
+            binding.shotGroup.parent?.let { (it as? View)?.visibility = View.GONE }
         }
 
         if (!cartViewModel.cartItems.value.isNullOrEmpty()) {
             showCartPreview(peek = true)
         }
     }
+
 
     /** Configure Bottom Sheet behavior with animation + half-peek */
     private fun setupBottomSheet() {

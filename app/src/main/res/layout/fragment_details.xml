@@ -19,13 +19,19 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Image Placeholder -->
-            <View
+            <!-- Image -->
+            <ImageView
+                android:id="@+id/imageCoffee"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="16dp"
-                android:background="@color/offWhite"
-                android:elevation="4dp" />
+                android:layout_height="220dp"
+                android:layout_margin="16dp"
+                android:padding="12dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:background="@drawable/rounded_background_white"
+                android:contentDescription="coffee_image" />
+
+
 
             <!-- Coffee Info -->
             <LinearLayout

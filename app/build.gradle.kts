@@ -50,6 +50,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-fragment-ktx:2.9.1")
     implementation ("androidx.navigation:navigation-ui-ktx:2.9.1")
     implementation ("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

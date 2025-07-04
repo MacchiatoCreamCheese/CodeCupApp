@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.codecupapp.databinding.FragmentHomeBinding
 import androidx.navigation.fragment.findNavController
+import com.example.codecupapp.data.CoffeeItem
 
 
 class HomeFragment : Fragment() {
@@ -77,9 +78,9 @@ class HomeFragment : Fragment() {
     /** 🌟 Setup promotions carousel */
     private fun setupPromotions() {
         val promoList = listOf(
-            R.drawable.promo1,
-            R.drawable.promo1,
-            R.drawable.promo1
+            R.drawable.ruby_red_simple_embrace_the_journey_desktop_wallpaper,
+            R.drawable.pastel_pink_retro_groovy_art_studio_typography_name_facebook_cover,
+            R.drawable.pink_and_white_gradient__facebook_cover
         )
 
         binding.promoCarousel.adapter = PromoAdapter(promoList)
@@ -92,8 +93,59 @@ class HomeFragment : Fragment() {
         })
     }
 
+
+
+
     /** ☕ Setup coffee menus with click-to-detail navigation */
     private fun setupCoffeeGrids() {
+        val bestSellerList = listOf(
+            CoffeeItem("Americano", 3.00, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Mocha", 3.50, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Taco Milktea", 3.75, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Pumpkin Spice", 4.25, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Egg Coffee", 4.00, R.drawable.mug_coffee_png16824_1__1_)
+        )
+        val coffeeList = listOf(
+            CoffeeItem("Espresso", 3.00, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Latte", 3.50, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Cappucino", 3.75, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Macchiato", 4.25, R.drawable.mug_coffee_png16824_1__1_),
+            CoffeeItem("Drip Coffee", 4.00, R.drawable.mug_coffee_png16824_1__1_)
+        )
+
+        binding.recyclerBestSeller.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            adapter = CoffeeAdapter(coffeeList) { selectedItem ->
+                val bundle = Bundle().apply {
+                    putString("coffeeName", selectedItem.name)
+                    putDouble("coffeePrice", selectedItem.price)
+                    putInt("coffeeImageResId", selectedItem.imageResId)
+                }
+                findNavController().navigate(R.id.detailsFragment, bundle) }
+        }
+        binding.recyclerCoffee.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            adapter = CoffeeAdapter(coffeeList) { selectedItem ->
+                val bundle = Bundle().apply {
+                    putString("coffeeName", selectedItem.name)
+                    putDouble("coffeePrice", selectedItem.price)
+                    putInt("coffeeImageResId", selectedItem.imageResId)
+                }
+                findNavController().navigate(R.id.detailsFragment, bundle) }
+        }
+
+
+
+
+        /*
+        binding.recyclerCoffee.adapter = CoffeeAdapter(coffeeList) { selectedItem ->
+            val bundle = Bundle().apply {
+                putString("coffeeName", selectedItem.name)
+                putDouble("coffeePrice", selectedItem.price)
+                putInt("coffeeImageRes", selectedItem.imageResId)
+            }
+            findNavController().navigate(R.id.detailsFragment, bundle)
+        }
         binding.recyclerBestSeller.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = CoffeeAdapter(
@@ -107,7 +159,8 @@ class HomeFragment : Fragment() {
                 listOf("Latte", "Espresso", "Cappuccino", "Macchiato", "Drip Coffee")
             ) { openDetails(it) }
         }
-    }
+
+
 
     /** 🎯 Navigate to detail fragment */
     private fun openDetails(coffeeName: String) {
@@ -116,6 +169,10 @@ class HomeFragment : Fragment() {
         }
         findNavController().navigate(R.id.detailsFragment, bundle)
     }
+        * */
+
+    }
+
 
     /** 🔘 Add active/inactive indicator dots for promo */
     private fun addDots(count: Int, selectedPosition: Int) {
@@ -163,6 +220,13 @@ class HomeFragment : Fragment() {
 
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
+
+    override fun onResume() {
+        super.onResume()
+        profileViewModel.loadProfile() // ← force refresh whenever we come back to Home
+    }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

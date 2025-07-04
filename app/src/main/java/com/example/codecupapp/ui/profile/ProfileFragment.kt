@@ -57,6 +57,13 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
 
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            binding.textUserEmail.text = currentUser.email
+        } else {
+            binding.textUserEmail.text = "No user signed in"
+        }
+
         checkAuthenticationOrRedirect()
 
         handleBackNavigation()
