@@ -106,7 +106,11 @@ class MainActivity : AppCompatActivity() {
             val isHome = destination.id == R.id.homeFragment
 
             binding.toolbar.visibility = if (isAuth) View.GONE else View.VISIBLE
-            binding.btnExpand.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnExpandCollapsed.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnExpandInsideMenu.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnInfo.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnHelp.visibility = if (isAuth) View.GONE else View.VISIBLE
+
             binding.bottomNav.visibility = if (isAuth) View.GONE else View.VISIBLE
             binding.btnCartFloating.visibility = if (isHome) View.VISIBLE else View.GONE
             binding.badgeCount.visibility =
@@ -166,11 +170,38 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
 
-        binding.btnExpand.setOnClickListener {
-            isExpanded = !isExpanded
-            binding.expandedMenu.visibility = if (isExpanded) View.VISIBLE else View.GONE
+        // When collapsed chevron is tapped → show full menu
+        binding.btnExpandCollapsed.setOnClickListener {
+            isExpanded = true
+            binding.btnExpandCollapsed.visibility = View.GONE
+            binding.expandedMenu.apply {
+                visibility = View.VISIBLE
+                alpha = 0f
+                translationY = 30f
+                animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(200)
+                    .start()
+            }
+        }
+
+        // When chevron inside expanded bar is tapped → collapse
+        binding.btnExpandInsideMenu.setOnClickListener {
+            isExpanded = false
+            binding.expandedMenu.animate()
+                .alpha(0f)
+                .translationY(30f)
+                .setDuration(200)
+                .withEndAction {
+                    binding.expandedMenu.visibility = View.GONE
+                    binding.btnExpandCollapsed.visibility = View.VISIBLE
+                }
+                .start()
         }
     }
+
+
 
     /** ❓ Help and Info click handlers */
     private fun setupMenuButtons() {

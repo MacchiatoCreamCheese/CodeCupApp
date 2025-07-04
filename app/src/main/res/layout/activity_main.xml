@@ -82,7 +82,7 @@
 
     <!-- Expand Button -->
     <ImageButton
-        android:id="@+id/btnExpand"
+        android:id="@+id/btnExpandCollapsed"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="16dp"
@@ -108,7 +108,7 @@
         android:src="@drawable/local_mall_40px"
         app:fabSize="auto"
         app:backgroundTint="@color/cardPink"
-        app:layout_constraintBottom_toTopOf="@+id/btnExpand"
+        app:layout_constraintBottom_toTopOf="@+id/btnExpandCollapsed"
         app:layout_constraintEnd_toEndOf="parent"
         app:elevation="10dp"
         />
@@ -127,15 +127,15 @@
         app:layout_constraintStart_toStartOf="@+id/btnCartFloating"
         app:layout_constraintTop_toTopOf="@+id/btnCartFloating" />
 
-    <!-- Expandable Menu (hidden by default) -->
     <LinearLayout
         android:id="@+id/expandedMenu"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_bottom_nav"
-        android:elevation="8dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/item_bg"
+        android:elevation="12dp"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="12dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottom_nav"
         app:layout_constraintEnd_toEndOf="parent"
@@ -143,19 +143,38 @@
 
         <ImageButton
             android:id="@+id/btnHelp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/block_40px" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Help"
+            android:src="@drawable/block_40px"
+            android:padding="8dp"
+            app:tint="@android:color/black" />
 
         <ImageButton
             android:id="@+id/btnInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/deployed_code_40px" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Info"
+            android:src="@drawable/redeem_40px"
+            android:padding="8dp"
+            app:tint="@android:color/black" />
 
+        <!-- Collapse button -->
+        <ImageButton
+            android:id="@+id/btnExpandInsideMenu"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Collapse Menu"
+            android:src="@drawable/arrow_back_ios_new_40px"
+            android:rotation="-90"
+            android:padding="8dp"
+            app:tint="@android:color/darker_gray" />
     </LinearLayout>
+
+
 
     <!-- Bottom Navigation Bar -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
