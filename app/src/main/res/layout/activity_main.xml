@@ -23,21 +23,42 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp">
 
+            <!-- Profile / Back Button -->
             <ImageButton
-                android:id="@+id/btnLeft"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="40dp"
+                android:id="@+id/btnProfile"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
                 android:background="@android:color/transparent"
-                android:contentDescription="Back"
-                android:padding="10dp"
+                android:contentDescription="Profile or Back"
+                android:padding="8dp"
+                android:scaleType="centerInside"
                 android:src="@drawable/account_circle_40px"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Centered Title -->
+            <TextView
+                android:id="@+id/toolbarTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="Details"
+                android:textColor="@color/redIcon"
+                android:textSize="27sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Logo in Center (visible in top-level only) -->
             <ImageButton
                 android:id="@+id/btnLogo"
                 android:layout_width="wrap_content"
@@ -50,14 +71,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Cart Button -->
             <ImageButton
                 android:id="@+id/btnCart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="Cart"
-                android:padding="10dp"
+                android:padding="8dp"
+                android:scaleType="centerInside"
                 android:src="@drawable/shopping_cart_40px"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -65,6 +88,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.MaterialToolbar>
+
 
     <!-- Fragment Container below Toolbar -->
     <androidx.fragment.app.FragmentContainerView

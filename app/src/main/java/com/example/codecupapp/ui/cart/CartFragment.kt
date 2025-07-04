@@ -108,27 +108,19 @@ class CartFragment : Fragment() {
             val totalPrice = getTotalPrice(cartItems)
             var totalPoints = 0
 
-            cartViewModel.cartItems.value?.forEach { item ->
-
-                val itemName = item.name.lowercase()
-
-                val basePoints = CoffeePointsConfig.getPointsForCoffee(itemName)
-                val earnedPoints = basePoints * item.quantity
-
-                totalPoints += earnedPoints
+            cartItems.forEach { item ->
+                val coffee = CoffeeRepository.getByName(item.name)
+                val basePoints = coffee?.points ?: 0
+                totalPoints += basePoints * item.quantity
             }
-
-
 
             val formatter = java.text.SimpleDateFormat("dd MMMM | h:mm a", java.util.Locale.getDefault())
             val currentDateTime = formatter.format(java.util.Date())
             val selectedType = ordersViewModel.deliveryType.value ?: "Deliver"
             val address = if (selectedType == "Deliver") "User Address" else "Pickup at Code Cup"
-
-            val nameFormatter = java.text.SimpleDateFormat("yyyyMMdd_HHmm", java.util.Locale.getDefault())
+            val nameFormatter = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
             val nameTime = nameFormatter.format(java.util.Date())
 
-// Generate a unique name like: Order_20250702_1405_DELIVER
             val uniqueName = "Order_${nameTime}_${selectedType.uppercase()}"
 
             rewardsViewModel.addPoints(uniqueName, totalPoints)
@@ -145,6 +137,7 @@ class CartFragment : Fragment() {
             cartViewModel.dispatch(CartAction.ClearCart)
             findNavController().navigate(R.id.orderSuccessFragment)
         }
+
     }
 
     private fun updateTotal(items: List<CartItem>) {

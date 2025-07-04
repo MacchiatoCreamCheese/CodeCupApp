@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.databinding.FragmentOrdersBinding
-import com.google.android.material.button.MaterialButton
 
 
 
@@ -33,7 +32,6 @@ class OrdersFragment : Fragment() {
     private val ordersViewModel: OrdersViewModel by activityViewModels()
 
     private lateinit var ordersAdapter: OrdersAdapter
-    private lateinit var itemTouchHelper: ItemTouchHelper
 
 
     private var showingOngoing = true

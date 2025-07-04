@@ -77,5 +77,13 @@
         android:name="com.example.codecupapp.RedeemFragment"
         android:label="Redeem" />
 
+    <fragment
+        android:id="@+id/infoFragment"
+        android:name="com.example.codecupapp.InfoFragment"
+        android:label="Info" />
+    <fragment
+        android:id="@+id/helpFragment"
+        android:name="com.example.codecupapp.HelpFragment"
+        android:label="Help" />
 
 </navigation>

@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
 
     // Shared ViewModel for cart data
     private val cartViewModel: CartViewModel by viewModels()
-
     // Menu toggle state
     private var isExpanded = false
 
@@ -46,8 +45,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ☕ Init default coffee point config (e.g., reward point rules)
-        CoffeePointsConfig.initializeDefaults()
+
 
         // 🔄 Load user profile using coroutine
         lifecycleScope.launch {
@@ -77,9 +75,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.ordersFragment,
                 R.id.rewardsFragment,
                 R.id.profileFragment,
-                R.id.cartFragment,
-                R.id.detailsFragment,
-                R.id.redeemFragment
             )
         )
         setupActionBarWithNavController(navController, appBarConfig)
@@ -93,47 +88,108 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 👈 Handle left icon (back or profile)
-        binding.btnLeft.setOnClickListener {
-            when (navController.currentDestination?.id) {
-                R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment -> navController.navigateUp()
-                else -> navController.navigate(R.id.profileFragment)
+        binding.btnProfile.setOnClickListener {
+            val current = navController.currentDestination?.id
+            val showBack = current !in setOf(
+                R.id.homeFragment,
+                R.id.ordersFragment,
+                R.id.rewardsFragment,
+                R.id.profileFragment
+            )
+            if (showBack) {
+                navController.navigateUp()
+            } else {
+                navController.navigate(R.id.profileFragment)
             }
         }
+
+
 
         // 🎯 Handle destination changes to show/hide UI parts
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val isAuth = destination.id == R.id.authFragment
             val isHome = destination.id == R.id.homeFragment
 
-            binding.toolbar.visibility = if (isAuth) View.GONE else View.VISIBLE
-            binding.btnExpandCollapsed.visibility = if (isAuth) View.GONE else View.VISIBLE
-            binding.btnExpandInsideMenu.visibility = if (isAuth) View.GONE else View.VISIBLE
-            binding.btnInfo.visibility = if (isAuth) View.GONE else View.VISIBLE
-            binding.btnHelp.visibility = if (isAuth) View.GONE else View.VISIBLE
+            // 🟥 These fragments should show a simple top bar: just back + title
+            val isSimpleTop = destination.id in setOf(
+                R.id.cartFragment,
+                R.id.detailsFragment,
+                R.id.redeemFragment,
+                R.id.helpFragment,
+                R.id.infoFragment,
+                R.id.orderSuccessFragment  // ⬅️ Include this
+            )
 
+            // 🧱 TOOLBAR + TOP BUTTONS VISIBILITY
+            binding.toolbar.visibility = if (isAuth) View.GONE else View.VISIBLE
             binding.bottomNav.visibility = if (isAuth) View.GONE else View.VISIBLE
             binding.btnCartFloating.visibility = if (isHome) View.VISIBLE else View.GONE
+
+            // 🔘 Cart badge
             binding.badgeCount.visibility =
                 if (isHome && binding.badgeCount.text.toString() != "0") View.VISIBLE else View.GONE
 
-            // Swap icon (👤 profile or ⬅ back)
-            val isBackContext = destination.id in setOf(R.id.cartFragment, R.id.detailsFragment, R.id.redeemFragment)
-            binding.btnLeft.setImageResource(
-                if (isBackContext) R.drawable.back_arrow else R.drawable.account_circle_40px
+            // 🔘 Hide these in detail-style fragments
+            binding.btnLogo.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
+            binding.btnCart.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
+            binding.expandedMenu.visibility = View.GONE
+            binding.btnExpandCollapsed.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
+
+            // 🔁 If simple top: hide profile button, use toolbar back arrow
+// If top-level: show profile icon
+// If deep fragment: show profile as back icon (custom logic)
+            val isTopLevel = destination.id in setOf(
+                R.id.homeFragment, R.id.ordersFragment, R.id.rewardsFragment, R.id.profileFragment
             )
 
-            // ✅ Highlight selected bottom nav item
-            binding.bottomNav.menu.findItem(
-                when (destination.id) {
-                    R.id.homeFragment -> R.id.homeFragment
-                    R.id.ordersFragment -> R.id.ordersFragment
-                    R.id.rewardsFragment -> R.id.rewardsFragment
-                    R.id.profileFragment -> R.id.profileFragment
-                    R.id.redeemFragment -> R.id.rewardsFragment
-                    else -> R.id.homeFragment
+            when {
+                isSimpleTop -> {
+                    binding.btnProfile.visibility = View.GONE
                 }
-            ).isChecked = true
+                isTopLevel -> {
+                    binding.btnProfile.visibility = View.VISIBLE
+                    binding.btnProfile.setImageResource(R.drawable.account_circle_40px)
+                }
+                else -> {
+                    binding.btnProfile.visibility = View.VISIBLE
+                    binding.btnProfile.setImageResource(R.drawable.back_arrow)
+                }
+            }
+
+            // 🏷️ TITLE (only shown on simple top pages like Help, Info, etc.)
+            val title = when (destination.id) {
+                R.id.cartFragment -> "Your Cart"
+                R.id.detailsFragment -> "Details"
+                R.id.redeemFragment -> "Redeem"
+                R.id.helpFragment -> "Help"
+                R.id.infoFragment -> "Information"
+                R.id.orderSuccessFragment -> "Order Success"
+                else -> ""
+            }
+
+            if (isSimpleTop) {
+                binding.toolbarTitle.visibility = View.VISIBLE
+                binding.toolbarTitle.text = title
+            } else {
+                binding.toolbarTitle.visibility = View.GONE
+            }
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+
+
+            // ✅ Bottom nav item selection (only top-level nav fragments)
+            val navItem = when (destination.id) {
+                R.id.homeFragment -> R.id.homeFragment
+                R.id.ordersFragment -> R.id.ordersFragment
+                R.id.rewardsFragment -> R.id.rewardsFragment
+                R.id.profileFragment -> R.id.profileFragment
+                R.id.redeemFragment -> R.id.rewardsFragment
+                else -> null
+            }
+            navItem?.let {
+                binding.bottomNav.menu.findItem(it).isChecked = true
+            }
         }
+
 
         // 🌟 Logo returns to home
         binding.btnLogo.setOnClickListener {
@@ -207,11 +263,24 @@ class MainActivity : AppCompatActivity() {
     private fun setupMenuButtons() {
         binding.btnHelp.setOnClickListener {
             navController.navigate(R.id.helpFragment)
+
+            // Collapse menu after navigating
+            isExpanded = false
+            binding.expandedMenu.visibility = View.GONE
+            binding.btnExpandCollapsed.visibility = View.VISIBLE
         }
+
         binding.btnInfo.setOnClickListener {
             navController.navigate(R.id.infoFragment)
+
+            // Collapse menu after navigating
+            isExpanded = false
+            binding.expandedMenu.visibility = View.GONE
+            binding.btnExpandCollapsed.visibility = View.VISIBLE
         }
     }
+
+
 
     /** 🔙 Enable action bar up navigation */
     override fun onSupportNavigateUp(): Boolean {

@@ -67,6 +67,7 @@ class DetailsFragment : Fragment() {
         val itemName = args?.getString("coffeeName") ?: "Coffee"
         val imageResId = args?.getInt("coffeeImageResId") ?: R.drawable.local_cafe_40px__1_
         val price = args?.getDouble("coffeePrice") ?: 3.00
+        val itemPoints = arguments?.getInt("coffeePoints") ?: 0
 
         basePrice = price // 🟢 update base price for size calculation
         binding.textCoffeeTitle.text = itemName

@@ -2,13 +2,9 @@ package com.example.codecupapp.data
 
 
 data class OrderItem(
-    val date: String,
-    val name: String,
-    val address: String,
-    val price: Double
+    var date: String = "",
+    var name: String = "",
+    var address: String = "",
+    var price: Double = 0.0
 )
 
-object OrderData {
-    val ongoingOrders = mutableListOf<OrderItem>()
-    val historyOrders = mutableListOf<OrderItem>()
-}

@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.codecupapp.databinding.FragmentHomeBinding
 import androidx.navigation.fragment.findNavController
-import com.example.codecupapp.data.CoffeeItem
+import com.example.codecupapp.CoffeeRepository
 
 
 class HomeFragment : Fragment() {
@@ -39,6 +39,9 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
+        ordersViewModel.loadOrdersFromFirebase()
 
         // ⏰ Dynamic greeting
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -98,24 +101,11 @@ class HomeFragment : Fragment() {
 
     /** ☕ Setup coffee menus with click-to-detail navigation */
     private fun setupCoffeeGrids() {
-        val bestSellerList = listOf(
-            CoffeeItem("Americano", 3.00, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Mocha", 3.50, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Taco Milktea", 3.75, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Pumpkin Spice", 4.25, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Egg Coffee", 4.00, R.drawable.mug_coffee_png16824_1__1_)
-        )
-        val coffeeList = listOf(
-            CoffeeItem("Espresso", 3.00, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Latte", 3.50, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Cappucino", 3.75, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Macchiato", 4.25, R.drawable.mug_coffee_png16824_1__1_),
-            CoffeeItem("Drip Coffee", 4.00, R.drawable.mug_coffee_png16824_1__1_)
-        )
+
 
         binding.recyclerBestSeller.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(coffeeList) { selectedItem ->
+            adapter = CoffeeAdapter(CoffeeRepository.bestSellers) { selectedItem ->
                 val bundle = Bundle().apply {
                     putString("coffeeName", selectedItem.name)
                     putDouble("coffeePrice", selectedItem.price)
@@ -125,7 +115,7 @@ class HomeFragment : Fragment() {
         }
         binding.recyclerCoffee.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(coffeeList) { selectedItem ->
+            adapter = CoffeeAdapter(CoffeeRepository.allCoffees) { selectedItem ->
                 val bundle = Bundle().apply {
                     putString("coffeeName", selectedItem.name)
                     putDouble("coffeePrice", selectedItem.price)
