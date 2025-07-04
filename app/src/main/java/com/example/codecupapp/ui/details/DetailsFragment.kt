@@ -21,9 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.codecupapp.data.CartItem
 import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 
 
 class DetailsFragment : Fragment() {
@@ -157,10 +154,12 @@ class DetailsFragment : Fragment() {
         setupIconWithLabelGroup(
             binding.tempGroup,
             listOf(
-                Triple("Hot", R.drawable.windshield_heat_front_40px, 32f),
                 Triple("Iced", R.drawable.ac_unit_40px, 32f),
+                Triple("Hot", R.drawable.windshield_heat_front_40px, 32f),
             ),
-        ) { temperature = it }
+        ) { selectedTemp ->
+            temperature = selectedTemp
+            updateIceGroupAvailability(selectedTemp == "Hot") }
 
         setupIconWithLabelGroup(
             binding.iceGroup,
@@ -177,6 +176,21 @@ class DetailsFragment : Fragment() {
                 Triple("Double", R.drawable.local_cafe_40px__1_, 32f)
             )
         ) { shot = it }
+    }
+
+
+    private fun updateIceGroupAvailability(disable: Boolean) {
+        for (i in 0 until binding.iceGroup.childCount) {
+            val child = binding.iceGroup.getChildAt(i)
+            child.isEnabled = !disable
+            child.alpha = if (disable) 0.4f else 1f
+        }
+
+        // Optional: if hot, force ice = "No Ice"
+        if (disable) {
+            ice = "No Ice"
+            updateIconGroupSelection(binding.iceGroup, "No Ice")
+        }
     }
 
 
@@ -292,15 +306,19 @@ class DetailsFragment : Fragment() {
             }
             val adjustedPrice = basePrice + sizeAdjustment
 
+            val skipShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
+            val isShotSkipped = binding.textCoffeeTitle.text.toString() in skipShotFor
+
             val item = CartItem(
                 name = binding.textCoffeeTitle.text.toString(),
-                shot = shot,
+                shot = if (isShotSkipped) "" else shot,  // 👈 FIXED HERE
                 temperature = temperature,
                 size = size,
                 ice = ice,
                 quantity = quantity,
-                unitPrice = adjustedPrice // ✅ Now includes size pricing!
+                unitPrice = adjustedPrice
             )
+
             cartViewModel.dispatch(CartAction.AddItem(item))
             val totalCount = cartViewModel.cartItems.value.orEmpty().sumOf { it.quantity }
             (activity as? MainActivity)?.updateCartBadge(totalCount)

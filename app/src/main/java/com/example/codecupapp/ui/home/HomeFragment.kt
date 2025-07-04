@@ -10,25 +10,27 @@ import android.widget.GridLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.codecupapp.databinding.FragmentHomeBinding
-import androidx.navigation.fragment.findNavController
-import com.example.codecupapp.CoffeeRepository
-
 
 class HomeFragment : Fragment() {
 
+    //View Binding
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
+    //ViewModels (state management)
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
     private val profileViewModel: ProfileViewModel by activityViewModels()
 
+    //UI states
     private var dots = arrayOfNulls<ImageView>(3)
     private var selectedAddressType: String = "Deliver"
 
+    //View creation
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,28 +39,41 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    //After view is created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        //Load order state
         ordersViewModel.loadOrdersFromFirebase()
 
-        // ⏰ Dynamic greeting
+        //Dynamic time-based greeting
+        binding.textGreeting.text = getGreeting()
+
+        //Observe user name updates
+        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            binding.textUsername.text = "${profile.name}."
+        }
+
+        //Delivery type selector, promotions, coffee menu, loyalty reward stamps
+        setupAddressToggle()
+        setupPromotions()
+        setupCoffeeGrids()
+        observeLoyaltyStamps(binding.loyaltyGridLayout)
+    }
+
+    //Return greeting based on time
+    private fun getGreeting(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val greeting = when (hour) {
+        return when (hour) {
             in 5..11 -> "Good Morning,"
             in 12..17 -> "Good Afternoon,"
             in 18..23 -> "Good Night,"
             else -> "Hello,"
         }
-        binding.textGreeting.text = greeting
+    }
 
-        // 🔄 Observe LiveData from ViewModel
-        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
-            binding.textUsername.text = "${profile.name}."
-        }
-
-        // 🎯 Toggle Deliver vs Pickup selection
+    //Setup toggle between Deliver and Pickup
+    private fun setupAddressToggle() {
         binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 selectedAddressType = when (checkedId) {
@@ -69,16 +84,9 @@ class HomeFragment : Fragment() {
                 ordersViewModel.deliveryType.value = selectedAddressType
             }
         }
-
-        // 🧋 Coffee carousels and bestsellers
-        setupPromotions()
-        setupCoffeeGrids()
-
-        // 🎖 Loyalty reward system
-        observeLoyaltyStamps(binding.loyaltyGridLayout)
     }
 
-    /** 🌟 Setup promotions carousel */
+    //Setup promotions carousel (images + dots)
     private fun setupPromotions() {
         val promoList = listOf(
             R.drawable.ruby_red_simple_embrace_the_journey_desktop_wallpaper,
@@ -96,84 +104,18 @@ class HomeFragment : Fragment() {
         })
     }
 
-
-
-
-    /** ☕ Setup coffee menus with click-to-detail navigation */
-    private fun setupCoffeeGrids() {
-
-
-        binding.recyclerBestSeller.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(CoffeeRepository.bestSellers) { selectedItem ->
-                val bundle = Bundle().apply {
-                    putString("coffeeName", selectedItem.name)
-                    putDouble("coffeePrice", selectedItem.price)
-                    putInt("coffeeImageResId", selectedItem.imageResId)
-                }
-                findNavController().navigate(R.id.detailsFragment, bundle) }
-        }
-        binding.recyclerCoffee.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(CoffeeRepository.allCoffees) { selectedItem ->
-                val bundle = Bundle().apply {
-                    putString("coffeeName", selectedItem.name)
-                    putDouble("coffeePrice", selectedItem.price)
-                    putInt("coffeeImageResId", selectedItem.imageResId)
-                }
-                findNavController().navigate(R.id.detailsFragment, bundle) }
-        }
-
-
-
-
-        /*
-        binding.recyclerCoffee.adapter = CoffeeAdapter(coffeeList) { selectedItem ->
-            val bundle = Bundle().apply {
-                putString("coffeeName", selectedItem.name)
-                putDouble("coffeePrice", selectedItem.price)
-                putInt("coffeeImageRes", selectedItem.imageResId)
-            }
-            findNavController().navigate(R.id.detailsFragment, bundle)
-        }
-        binding.recyclerBestSeller.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(
-                listOf("Americano", "Mocha", "Pumpkin Spice", "Taco Milktea", "Egg Coffee")
-            ) { openDetails(it) }
-        }
-
-        binding.recyclerCoffee.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter = CoffeeAdapter(
-                listOf("Latte", "Espresso", "Cappuccino", "Macchiato", "Drip Coffee")
-            ) { openDetails(it) }
-        }
-
-
-
-    /** 🎯 Navigate to detail fragment */
-    private fun openDetails(coffeeName: String) {
-        val bundle = Bundle().apply {
-            putString("coffeeName", coffeeName)
-        }
-        findNavController().navigate(R.id.detailsFragment, bundle)
-    }
-        * */
-
-    }
-
-
-    /** 🔘 Add active/inactive indicator dots for promo */
+    /** 🔘 Add active/inactive indicator dots under carousel */
     private fun addDots(count: Int, selectedPosition: Int) {
         binding.dotsLayout.removeAllViews()
         dots = arrayOfNulls(count)
+
         for (i in 0 until count) {
             dots[i] = ImageView(requireContext()).apply {
                 setImageResource(
                     if (i == selectedPosition) R.drawable.dot_active else R.drawable.dot_inactive
                 )
             }
+
             val params = ViewGroup.MarginLayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -183,7 +125,34 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /** 🏆 Observe stamp count and update loyalty UI */
+    /** ☕ Setup coffee grid menus and navigation to Details */
+    private fun setupCoffeeGrids() {
+        binding.recyclerBestSeller.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            adapter = CoffeeAdapter(CoffeeRepository.bestSellers) { selectedItem ->
+                navigateToDetails(selectedItem)
+            }
+        }
+
+        binding.recyclerCoffee.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            adapter = CoffeeAdapter(CoffeeRepository.allCoffees) { selectedItem ->
+                navigateToDetails(selectedItem)
+            }
+        }
+    }
+
+    /** 🎯 Navigate to detail screen with coffee info */
+    private fun navigateToDetails(coffee: CoffeeItem) {
+        val bundle = Bundle().apply {
+            putString("coffeeName", coffee.name)
+            putDouble("coffeePrice", coffee.price)
+            putInt("coffeeImageResId", coffee.imageResId)
+        }
+        findNavController().navigate(R.id.detailsFragment, bundle)
+    }
+
+    /** 🏆 Observe stamp count and update loyalty stamp grid */
     private fun observeLoyaltyStamps(gridLayout: GridLayout) {
         loyaltyViewModel.stamps.observe(viewLifecycleOwner) { count ->
             gridLayout.removeAllViews()
@@ -208,16 +177,17 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /** 🔧 Extension to convert dp to px */
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
 
+    /** 🔁 Always reload profile when returning to Home */
     override fun onResume() {
         super.onResume()
-        profileViewModel.loadProfile() // ← force refresh whenever we come back to Home
+        profileViewModel.loadProfile()
     }
 
-
-
+    /** 🧹 Cleanup view binding */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

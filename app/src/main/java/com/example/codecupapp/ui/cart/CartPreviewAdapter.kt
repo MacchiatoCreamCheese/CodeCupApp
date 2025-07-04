@@ -14,11 +14,23 @@ class CartPreviewAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CartItem) {
             binding.textCartItemName.text = item.name
-            binding.textCartItemDetails.text =
-                "${item.size}, ${item.temperature}, ${item.shot} shot, ${item.ice} ice"
+
+            val hideShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
+
+            val details = buildList {
+                add(item.size)
+                add(item.temperature)
+                if (item.name !in hideShotFor) {
+                    add("${item.shot} shot")
+                }
+                add(item.ice)
+            }.joinToString(", ")
+
+            binding.textCartItemDetails.text = details
             binding.textCartItemQuantity.text = "x${item.quantity}"
             binding.textCartItemPrice.text = "$%.2f".format(item.unitPrice * item.quantity)
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {

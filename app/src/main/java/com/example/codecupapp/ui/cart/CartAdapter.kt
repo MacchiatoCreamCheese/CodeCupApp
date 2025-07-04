@@ -27,7 +27,7 @@ class CartAdapter(
 
         holder.binding.apply {
             textCartItemName.text = item.name
-            textCartItemOptions.text = "${item.shot} | ${item.temperature} | ${item.size} | ${item.ice}"
+            textCartItemOptions.text = "${item.ice} | ${item.temperature} | ${item.size} | ${item.shot}"
             textCartItemPrice.text = "$%.2f x${item.quantity}".format(item.unitPrice)
         }
     }
