@@ -9,6 +9,7 @@ import com.example.codecupapp.databinding.ItemCartBinding
 
 class CartAdapter(
     private val items: MutableList<CartItem>,
+    private val onDelete: (Int) -> Unit
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     // 🧱 ViewHolder using ViewBinding
