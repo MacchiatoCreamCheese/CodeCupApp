@@ -1,28 +1,37 @@
 package com.example.codecupapp
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.codecupapp.databinding.ItemPromoCardBinding
 
 
+/**
+ * Adapter for displaying promotional images in a ViewPager or RecyclerView.
+ * @param promos List of drawable resource IDs representing promotional banners.
+ */
+class PromoAdapter(
+    private val promos: List<Int>
+) : RecyclerView.Adapter<PromoAdapter.PromoViewHolder>() {
 
+    // 🧱 ViewHolder using ViewBinding for safer UI references
+    inner class PromoViewHolder(val binding: ItemPromoCardBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
-class PromoAdapter(private val promos: List<Int>) : RecyclerView.Adapter<PromoAdapter.PromoViewHolder>() {
-
-    inner class PromoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val promoImage: ImageView = itemView.findViewById(R.id.promoImage)
-    }
-
+    // 🔧 Inflate layout using ViewBinding
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PromoViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_promo_card, parent, false)
-        return PromoViewHolder(view)
+        val binding = ItemPromoCardBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return PromoViewHolder(binding)
     }
 
+    // 🖼️ Bind promo image to ViewHolder
     override fun onBindViewHolder(holder: PromoViewHolder, position: Int) {
-        holder.promoImage.setImageResource(promos[position])
+        val imageRes = promos[position]
+        holder.binding.promoImage.setImageResource(imageRes)
     }
 
+    // 📦 Total number of promo items
     override fun getItemCount(): Int = promos.size
 }

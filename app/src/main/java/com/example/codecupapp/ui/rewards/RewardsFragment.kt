@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -17,43 +16,43 @@ import com.example.codecupapp.databinding.FragmentRewardsBinding
 
 class RewardsFragment : Fragment() {
 
+    // 🧩 ViewBinding
     private var _binding: FragmentRewardsBinding? = null
     private val binding get() = _binding!!
 
+    // 📦 Shared ViewModels
+    private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
+    private val rewardsViewModel: RewardsViewModel by activityViewModels()
 
+    // 🏗️ Inflate layout with ViewBinding
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRewardsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
-    private val rewardsViewModel: RewardsViewModel by activityViewModels()
-
+    // 🚀 Lifecycle hook: setup UI and observers
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentRewardsBinding.bind(view)
 
-        val gridLayout = view.findViewById<GridLayout>(R.id.loyaltyGridLayout)
-        observeLoyaltyStamps(gridLayout)
+        // 🎯 Loyalty Grid Setup
+        observeLoyaltyStamps()
 
-
-        gridLayout.setOnClickListener {
-            loyaltyViewModel.stamps.value?.let { count ->
-                if (count >= 8) {
-                    showResetDialog()
-                }
-            }
+        binding.loyaltyGridLayout.setOnClickListener {
+            if ((loyaltyViewModel.stamps.value ?: 0) >= 8) showResetDialog()
         }
 
+        // 🎁 Rewards List Setup
         binding.recyclerRewards.layoutManager = LinearLayoutManager(requireContext())
+
         rewardsViewModel.initializeRewards()
+
         rewardsViewModel.points.observe(viewLifecycleOwner) { points ->
             binding.textAvailablePoints.text = "Points: $points"
         }
+
         rewardsViewModel.rewardList.observe(viewLifecycleOwner) { rewards ->
             binding.recyclerRewards.adapter = RewardsAdapter(rewards) { reward ->
                 if (rewardsViewModel.redeem(reward)) {
@@ -63,20 +62,36 @@ class RewardsFragment : Fragment() {
                 }
             }
         }
+
+        // 🧾 Redeem history navigation
         binding.btnHistory.setOnClickListener {
             findNavController().navigate(R.id.redeemFragment)
         }
-
-//
-//        rewardsViewModel.points.observe(viewLifecycleOwner) { points ->
-//            binding.textAvailablePoints.text = "Points: $points"
-//            UserData.points = points
-//        }
     }
 
+    // 🧃 Observe loyalty stamps and update grid
+    private fun observeLoyaltyStamps() {
+        loyaltyViewModel.stamps.observe(viewLifecycleOwner) { count ->
+            val gridLayout = binding.loyaltyGridLayout
+            gridLayout.removeAllViews()
 
+            for (i in 1..8) {
+                val icon = ImageView(requireContext()).apply {
+                    setImageResource(
+                        if (i <= count) R.drawable.local_cafe_40px__1_
+                        else R.drawable.local_cafe_40px
+                    )
+                    val size = 48.dp
+                    layoutParams = ViewGroup.MarginLayoutParams(size, size).apply {
+                        setMargins(12, 12, 12, 12)
+                    }
+                }
+                gridLayout.addView(icon)
+            }
+        }
+    }
 
-
+    // 🗨️ Dialog to confirm loyalty reset
     private fun showResetDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Reset Loyalty Card?")
@@ -88,34 +103,13 @@ class RewardsFragment : Fragment() {
             .show()
     }
 
-
-    private fun observeLoyaltyStamps(gridLayout: GridLayout) {
-        loyaltyViewModel.stamps.observe(viewLifecycleOwner) { count ->
-            gridLayout.removeAllViews()
-
-            for (i in 1..8) {
-                val cupIcon = ImageView(requireContext()).apply {
-                    setImageResource(
-                        if (i <= count) R.drawable.local_cafe_40px__1_
-                        else R.drawable.local_cafe_40px // Use separate outline icon
-                    )
-                    val size = 48.dp
-                    layoutParams = ViewGroup.MarginLayoutParams(size, size).apply {
-                        setMargins(12, 12, 12, 12)
-                    }
-                }
-                gridLayout.addView(cupIcon)
-            }
-        }
-    }
-
+    // 🧹 Cleanup
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
-
-
+    // 🧮 Extension for dp-to-px conversion
+    private val Int.dp: Int
+        get() = (this * resources.displayMetrics.density).toInt()
 }
-

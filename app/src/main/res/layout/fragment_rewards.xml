@@ -7,9 +7,28 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <include
-        android:id="@+id/loyaltyCardInclude"
-        layout="@layout/loyalty_card" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/loyaltyCardLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_margin="16dp"
+        android:padding="12dp"
+        android:background="@drawable/round_border_red"
+        android:elevation="4dp">
+
+
+        <!-- Loyalty Card Grid for Stamps -->
+        <GridLayout
+            android:id="@+id/loyaltyGridLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="4"
+            android:alignmentMode="alignMargins"
+            android:padding="0dp" />
+
+    </LinearLayout>
 
 
     <LinearLayout

@@ -1,11 +1,9 @@
 package com.example.codecupapp
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.codecupapp.data.RewardItem
-
 
 
 class RewardsViewModel : ViewModel() {
@@ -37,9 +35,13 @@ class RewardsViewModel : ViewModel() {
     fun initializeRewards() {
         if (_rewardList.value.isNullOrEmpty()) {
             _rewardList.value = listOf(
-                RewardItem("Free Coffee", 100),
-                RewardItem("10% Discount", 1),
-                RewardItem("Tote Bag", 150)
+                RewardItem("Free cup", 40),
+                RewardItem("10% Discount", 5),
+                RewardItem("Tote Bag", 50),
+                RewardItem("Capuchino", 20),
+                RewardItem("Freeship", 15),
+                RewardItem("Pudding", 10),
+                RewardItem("School Bag", 100)
             )
         }
     }

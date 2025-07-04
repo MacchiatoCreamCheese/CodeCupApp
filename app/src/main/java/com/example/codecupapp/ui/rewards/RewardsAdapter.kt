@@ -7,31 +7,42 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.data.RewardItem
+import com.example.codecupapp.databinding.ItemRewardCardBinding
 
+/**
+ * Adapter for displaying redeemable rewards in a RecyclerView.
+ * Handles UI binding and redeem button click logic.
+ */
 class RewardsAdapter(
     private val rewards: List<RewardItem>,
     private val onRedeem: (RewardItem) -> Unit
 ) : RecyclerView.Adapter<RewardsAdapter.RewardViewHolder>() {
 
-    inner class RewardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val title: TextView = view.findViewById(R.id.textRewardTitle)
-        val points: TextView = view.findViewById(R.id.textRewardPoints)
-        val btnRedeem: Button = view.findViewById(R.id.btnRedeem)
-    }
+    /**
+     * ViewHolder using ViewBinding for reward card layout.
+     */
+    inner class RewardViewHolder(val binding: ItemRewardCardBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
+    // 🔧 Inflate view using ViewBinding
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RewardViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_reward_card, parent, false)
-        return RewardViewHolder(view)
+        val binding = ItemRewardCardBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return RewardViewHolder(binding)
     }
 
+    // 🎯 Bind data and set click listener
     override fun onBindViewHolder(holder: RewardViewHolder, position: Int) {
         val reward = rewards[position]
-        holder.title.text = reward.title
-        holder.points.text = "Requires: ${reward.pointsRequired} points"
-
-        holder.btnRedeem.setOnClickListener {
-            onRedeem(reward)
+        with(holder.binding) {
+            textRewardTitle.text = reward.title
+            textRewardPoints.text = "Requires: ${reward.pointsRequired} points"
+            btnRedeem.setOnClickListener {
+                onRedeem(reward)
+            }
         }
     }
 
