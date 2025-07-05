@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.databinding.ItemPromoCardBinding
+
 /**
  * Adapter for displaying promotional banners using a RecyclerView.
  * @param promos List of drawable resource IDs for each promotion image.

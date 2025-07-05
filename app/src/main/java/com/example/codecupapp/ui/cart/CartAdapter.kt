@@ -36,6 +36,7 @@ class CartAdapter(
             textCartItemPrice.text = "$%.2f x${item.quantity}".format(item.unitPrice)
         }
     }
+
     // Determine whether to show shot information
     private fun shouldDisplayShot(item: CartItem): String? {
         val skipShotFor = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
@@ -51,9 +52,6 @@ class CartAdapter(
             shouldDisplayShot(item) // This is already String? or null
         ).joinToString(" | ")
     }
-
-
-
 
 
     // Return item at given index if valid

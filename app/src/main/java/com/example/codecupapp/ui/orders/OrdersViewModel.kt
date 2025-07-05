@@ -1,7 +1,6 @@
 package com.example.codecupapp
 
 import OrderItem
-import UserData
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -82,6 +81,7 @@ class OrdersViewModel : ViewModel() {
     fun setHistoryOrders(orders: MutableList<OrderItem>) {
         _historyOrders.value = orders
     }
+
     fun setOngoingOrders(orders: MutableList<OrderItem>) {
         _ongoingOrders.value = orders
     }

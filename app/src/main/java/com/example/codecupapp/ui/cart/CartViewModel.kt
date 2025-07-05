@@ -38,7 +38,8 @@ class CartViewModel : ViewModel() {
 
         if (existingIndex >= 0) {
             val existingItem = currentItems[existingIndex]
-            currentItems[existingIndex] = existingItem.copy(quantity = existingItem.quantity + item.quantity)
+            currentItems[existingIndex] =
+                existingItem.copy(quantity = existingItem.quantity + item.quantity)
         } else {
             currentItems.add(item)
         }

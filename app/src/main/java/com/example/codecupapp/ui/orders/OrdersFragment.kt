@@ -63,7 +63,8 @@ class OrdersFragment : Fragment() {
 
             // Optional: Toast if reward threshold met
             if (loyaltyViewModel.stamps.value == 8) {
-                Toast.makeText(requireContext(), "You earned a free reward!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "You earned a free reward!", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
         binding.recyclerOrders.adapter = ordersAdapter

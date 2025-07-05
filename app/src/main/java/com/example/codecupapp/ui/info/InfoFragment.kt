@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,7 +43,12 @@ class InfoFragment : Fragment() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://katinat.vn/")))
             },
             InfoItem("Facebook", R.drawable.ac_unit_40px, "https://www.facebook.com/katinat.vn") {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/katinat.vn")))
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://www.facebook.com/katinat.vn")
+                    )
+                )
             },
             InfoItem("Feedback and support", R.drawable.ac_unit_40px, "Let us know!") {
                 Toast.makeText(context, "Feedback feature coming soon!", Toast.LENGTH_SHORT).show()

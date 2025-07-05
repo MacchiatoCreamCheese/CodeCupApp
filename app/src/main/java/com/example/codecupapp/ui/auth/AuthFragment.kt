@@ -15,6 +15,7 @@ import com.example.codecupapp.databinding.FragmentAuthBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+
 class AuthFragment : Fragment() {
 
     // View binding reference (state management)

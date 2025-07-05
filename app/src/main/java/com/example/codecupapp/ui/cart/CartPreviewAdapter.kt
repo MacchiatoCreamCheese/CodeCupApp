@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.data.CartItem
 import com.example.codecupapp.databinding.ItemCartPreviewBinding
+
 // Adapter for displaying cart item previews in a RecyclerView
 class CartPreviewAdapter(
     private val items: List<CartItem> // Immutable list of cart items
@@ -24,7 +25,8 @@ class CartPreviewAdapter(
 
         // UI formatting: Builds item detail string (size, temp, shot, ice)
         private fun buildItemDetails(item: CartItem): String {
-            val itemsWithHiddenShot = listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
+            val itemsWithHiddenShot =
+                listOf("Latte", "Milk Tea", "Mocha", "Pumpkin Spice", "Taco Milktea")
 
             return buildList {
                 add(item.size)

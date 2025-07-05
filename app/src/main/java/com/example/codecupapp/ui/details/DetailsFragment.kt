@@ -149,35 +149,43 @@ class DetailsFragment : Fragment() {
 
     // Option selectors (shot, temp, size, ice)
     private fun setupOptionSelectors() {
-        setupIconGroup(binding.sizeGroup, listOf(
-            Triple("Small", R.drawable.water_full_40px, 28f),
-            Triple("Medium", R.drawable.water_full_40px, 36f),
-            Triple("Large", R.drawable.water_full_40px, 44f)
-        )) {
+        setupIconGroup(
+            binding.sizeGroup, listOf(
+                Triple("Small", R.drawable.water_full_40px, 28f),
+                Triple("Medium", R.drawable.water_full_40px, 36f),
+                Triple("Large", R.drawable.water_full_40px, 44f)
+            )
+        ) {
             size = it
             updateTotal()
         }
 
-        setupIconGroup(binding.tempGroup, listOf(
-            Triple("Iced", R.drawable.ac_unit_40px, 32f),
-            Triple("Hot", R.drawable.windshield_heat_front_40px, 32f)
-        )) {
+        setupIconGroup(
+            binding.tempGroup, listOf(
+                Triple("Iced", R.drawable.ac_unit_40px, 32f),
+                Triple("Hot", R.drawable.windshield_heat_front_40px, 32f)
+            )
+        ) {
             temperature = it
             updateIceGroupAvailability(it == "Hot")
         }
 
-        setupIconGroup(binding.iceGroup, listOf(
-            Triple("No Ice", R.drawable.block_40px, 32f),
-            Triple("Some Ice", R.drawable.deployed_code_40px, 32f),
-            Triple("Full Ice", R.drawable.deployed_code_40px, 39f)
-        )) {
+        setupIconGroup(
+            binding.iceGroup, listOf(
+                Triple("No Ice", R.drawable.block_40px, 32f),
+                Triple("Some Ice", R.drawable.deployed_code_40px, 32f),
+                Triple("Full Ice", R.drawable.deployed_code_40px, 39f)
+            )
+        ) {
             ice = it
         }
 
-        setupIconGroup(binding.shotGroup, listOf(
-            Triple("Single", R.drawable.local_cafe_40px, 32f),
-            Triple("Double", R.drawable.local_cafe_40px__1_, 32f)
-        )) {
+        setupIconGroup(
+            binding.shotGroup, listOf(
+                Triple("Single", R.drawable.local_cafe_40px, 32f),
+                Triple("Double", R.drawable.local_cafe_40px__1_, 32f)
+            )
+        ) {
             shot = it
         }
     }
@@ -206,9 +214,11 @@ class DetailsFragment : Fragment() {
             val iconView = ImageView(requireContext()).apply {
                 setImageResource(icon)
                 tag = label
-                layoutParams = LinearLayout.LayoutParams(dpToPx(sizeDp).toInt(), dpToPx(sizeDp).toInt()).apply {
-                    gravity = Gravity.CENTER_HORIZONTAL
-                }
+                layoutParams =
+                    LinearLayout.LayoutParams(dpToPx(sizeDp).toInt(), dpToPx(sizeDp).toInt())
+                        .apply {
+                            gravity = Gravity.CENTER_HORIZONTAL
+                        }
                 setColorFilter(Color.BLACK)
             }
 
@@ -231,7 +241,10 @@ class DetailsFragment : Fragment() {
             val containerLayout = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
                     marginEnd = dpToPx(12f).toInt()
                 }
                 setPadding(16, 16, 16, 16)
@@ -297,8 +310,10 @@ class DetailsFragment : Fragment() {
                     val safeBinding = _binding ?: return
 
                     safeBinding.dimOverlay.alpha = slideOffset * 0.7f
-                    safeBinding.dimOverlay.visibility = if (slideOffset > 0f) View.VISIBLE else View.GONE
-                    safeBinding.btnAddToCart.visibility = if (slideOffset > 0f) View.GONE else View.VISIBLE
+                    safeBinding.dimOverlay.visibility =
+                        if (slideOffset > 0f) View.VISIBLE else View.GONE
+                    safeBinding.btnAddToCart.visibility =
+                        if (slideOffset > 0f) View.GONE else View.VISIBLE
                 }
 
             })

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CodeCupApp</string>
+    <string name="query_find_branch_1">geo:0,0?q=Katinat+Ho+Chi+Minh</string>
+    <string name="query_find_branch_2">geo:0,0?q=Katinat+Binh+Duong</string>
+    <string name="cant_open_map">Cannot open map. Please check if Google Maps is installed.</string>
+
 </resources>

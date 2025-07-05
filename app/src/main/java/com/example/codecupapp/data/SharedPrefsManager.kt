@@ -36,6 +36,7 @@ object SharedPrefsManager {
             .putString(key, value)
             .apply()
     }
+
     fun clear(context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
@@ -98,15 +99,19 @@ object PendingWritesManager {
     fun clearOrder() {
         pendingOrderItems.clear()
     }
+
     fun clearRedeemTransactions() {
         pendingRedeemTransactions.clear()
     }
+
     fun clearPoints() {
         pendingPointsDelta = 0
     }
+
     fun clearStamps() {
         pendingStampsDelta = 0
     }
+
     fun clear() {
         pendingOrderItems.clear()
         pendingRedeemTransactions.clear()
@@ -117,7 +122,8 @@ object PendingWritesManager {
     fun getPendingMap(): Map<String, Any> {
         val result = mutableMapOf<String, Any>()
         if (pendingOrderItems.isNotEmpty()) result["ongoingOrders"] = pendingOrderItems
-        if (pendingRedeemTransactions.isNotEmpty()) result["redeemHistory"] = pendingRedeemTransactions
+        if (pendingRedeemTransactions.isNotEmpty()) result["redeemHistory"] =
+            pendingRedeemTransactions
         if (pendingPointsDelta != 0) result["points"] = pendingPointsDelta
         if (pendingStampsDelta != 0) result["stamps"] = pendingStampsDelta
         return result

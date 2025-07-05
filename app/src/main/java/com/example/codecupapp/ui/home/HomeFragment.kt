@@ -1,8 +1,10 @@
 package com.example.codecupapp
 
 
+import UserData
 import android.icu.util.Calendar
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import android.util.Log
 
 class HomeFragment : Fragment() {
 
@@ -72,14 +73,20 @@ class HomeFragment : Fragment() {
                 val userData = snapshot.toObject(UserData::class.java)
 
                 // Load orders
-                ordersViewModel.setOngoingOrders(userData?.ongoingOrders?.toMutableList() ?: mutableListOf())
-                ordersViewModel.setHistoryOrders(userData?.historyOrders?.toMutableList() ?: mutableListOf())
+                ordersViewModel.setOngoingOrders(
+                    userData?.ongoingOrders?.toMutableList() ?: mutableListOf()
+                )
+                ordersViewModel.setHistoryOrders(
+                    userData?.historyOrders?.toMutableList() ?: mutableListOf()
+                )
 
                 // Load points & history
                 val points = (snapshot.getLong("points") ?: 0L).toInt()
                 rewardsViewModel.setPoints(points)
 
-                rewardsViewModel.setTransactionHistory(userData?.redeemHistory?.toMutableList() ?: mutableListOf())
+                rewardsViewModel.setTransactionHistory(
+                    userData?.redeemHistory?.toMutableList() ?: mutableListOf()
+                )
 
                 // Load stamps
                 val stampCount = (snapshot.getLong("stamps") ?: 0L).toInt()
@@ -135,7 +142,8 @@ class HomeFragment : Fragment() {
         binding.promoCarousel.adapter = PromoAdapter(promoList)
         addDots(promoList.size, 0)
 
-        binding.promoCarousel.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        binding.promoCarousel.registerOnPageChangeCallback(object :
+            ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 addDots(promoList.size, position)
             }

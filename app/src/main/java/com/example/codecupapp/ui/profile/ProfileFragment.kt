@@ -1,10 +1,7 @@
 package com.example.codecupapp
 
-import UserData
-import android.content.Context
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
@@ -173,7 +171,8 @@ class ProfileFragment : Fragment() {
 
     // Ask to save before navigating back
     private fun handleBackNavigation() {
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     if (isDirty && currentlyEditingField != null) {
@@ -226,14 +225,26 @@ class ProfileFragment : Fragment() {
                         .addOnSuccessListener {
                             user.updatePassword(newPass)
                                 .addOnSuccessListener {
-                                    Toast.makeText(requireContext(), "Password updated", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Password updated",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                                 .addOnFailureListener {
-                                    Toast.makeText(requireContext(), "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Update failed: ${it.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                         }
                         .addOnFailureListener {
-                            Toast.makeText(requireContext(), "Incorrect password", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                "Incorrect password",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 }
             }
@@ -264,14 +275,14 @@ class ProfileFragment : Fragment() {
                     finishLogout()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(context, "Failed to sync: ${it.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to sync: ${it.message}", Toast.LENGTH_SHORT)
+                        .show()
                     finishLogout()
                 }
         } else {
             finishLogout()
         }
     }
-
 
 
     private fun finishLogout() {
@@ -282,7 +293,7 @@ class ProfileFragment : Fragment() {
 
 
     override fun onDestroyView() {
-         _binding = null
+        _binding = null
         super.onDestroyView()
     }
 

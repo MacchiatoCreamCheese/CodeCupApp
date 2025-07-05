@@ -58,8 +58,7 @@ class MainActivity : AppCompatActivity() {
             profileViewModel.setProfile(localProfile)
 
             trySyncPendingWrites()
-        }
-        else {
+        } else {
             Log.w("MainActivity", "No local profile found, redirecting to login.")
             val intent = Intent(this, SplashActivity::class.java)
             startActivity(intent)
@@ -148,7 +147,8 @@ class MainActivity : AppCompatActivity() {
             binding.btnLogo.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
             binding.btnCart.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
             binding.expandedMenu.visibility = View.GONE
-            binding.btnExpandCollapsed.visibility = if (isSimpleTop || isAuth) View.GONE else View.VISIBLE
+            binding.btnExpandCollapsed.visibility =
+                if (isSimpleTop || isAuth) View.GONE else View.VISIBLE
 
             // 🔁 If simple top: hide profile button, use toolbar back arrow
 // If top-level: show profile icon
@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity() {
     //Sync the orders from SharedPreferences to Firebase
     private fun trySyncPendingWrites() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val context = this
+        this
 
         val pendingData = PendingWritesManager.getPendingMap().toMutableMap()
 

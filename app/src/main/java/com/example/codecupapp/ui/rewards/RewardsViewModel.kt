@@ -1,7 +1,6 @@
 package com.example.codecupapp
 
 import PointTransaction
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,7 +11,6 @@ import com.example.codecupapp.data.RewardItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class RewardsViewModel : ViewModel() {
 
@@ -95,9 +93,9 @@ class RewardsViewModel : ViewModel() {
     }
 
 
-fun setTransactionHistory(history: List<PointTransaction>) {
-    _transactionHistory.value = history
-}
+    fun setTransactionHistory(history: List<PointTransaction>) {
+        _transactionHistory.value = history
+    }
 
 
     fun redeem(reward: RewardItem): Boolean {
@@ -127,8 +125,6 @@ fun setTransactionHistory(history: List<PointTransaction>) {
             }
         }
     }
-
-
 
 
 }

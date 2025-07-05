@@ -1,6 +1,5 @@
 package com.example.codecupapp
 
-import PointTransaction
 import UserData
 import android.content.Context
 import com.example.codecupapp.data.SharedPrefsManager
