@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -20,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.codecupapp.data.CartItem
 import com.example.codecupapp.databinding.FragmentDetailsBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+
 class DetailsFragment : Fragment() {
 
     private var _binding: FragmentDetailsBinding? = null

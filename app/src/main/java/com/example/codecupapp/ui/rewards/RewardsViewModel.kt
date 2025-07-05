@@ -29,15 +29,6 @@ class RewardsViewModel : ViewModel() {
         initializeRewards()
     }
 
-    private val _redeemList = MutableLiveData<List<RedeemItem>>(emptyList())
-    val redeemList: LiveData<List<RedeemItem>> = _redeemList
-
-    fun addToRedeem(item: RedeemItem) {
-        val updated = _redeemList.value.orEmpty().toMutableList()
-        updated.add(0, item)  // Newest on top
-        _redeemList.value = updated
-    }
-
 
     fun initializeRewards() {
         if (_rewardList.value.isNullOrEmpty()) {

@@ -50,11 +50,6 @@ class CartBottomSheet(
         }
     }
 
-    // Optional: define dynamic height (currently unused)
-    private fun getDialogHeight(): Int {
-        val displayMetrics = resources.displayMetrics
-        return (displayMetrics.heightPixels * 0.33).toInt()
-    }
 
     // Setup cart preview list
     private fun setupRecyclerView() {
