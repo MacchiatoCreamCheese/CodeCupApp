@@ -15,17 +15,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.FragmentProfileBinding
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.core.content.ContextCompat
-import android.animation.ValueAnimator
-import android.animation.ArgbEvaluator
-import android.content.Context
-import android.graphics.drawable.GradientDrawable
-
 
 class ProfileFragment : Fragment() {
 
@@ -57,6 +52,9 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentProfileBinding.bind(view)
 
+        profileViewModel.loadFromLocal(requireContext())
+
+
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             binding.textUserEmail.text = currentUser.email
@@ -70,13 +68,11 @@ class ProfileFragment : Fragment() {
 
         observeUserProfile()
 
-        profileViewModel.loadProfile()
+
         setEditListeners()
     }
 
-    /**
-     * 🔒 If user is not logged in, redirect to auth screen.
-     */
+    // If user is not logged in, redirect to auth screen
     private fun checkAuthenticationOrRedirect() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
@@ -85,9 +81,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /**
-     * 🧠 Observes profile LiveData and updates fields.
-     */
+    // Observes profile LiveData and updates fields.
     private fun observeUserProfile() {
         profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
             binding.editUserName.setText(profile.name)
@@ -98,9 +92,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /**
-     * 🔙 Intercept system back button for unsaved changes.
-     */
+    //Intercept system back button for unsaved changes.
     private fun handleBackNavigation() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -117,9 +109,7 @@ class ProfileFragment : Fragment() {
         )
     }
 
-    /**
-     * 🔒 Disable all input fields until editing is triggered.
-     */
+    // Disable all input fields until editing is triggered.
     private fun disableAllFields() {
         listOf(
             binding.editUserName,
@@ -132,9 +122,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /**
-     * 🖊 Setup individual edit icon click listeners.
-     */
+    // Setup individual edit icon click listeners.
     private fun setEditListeners() {
         setToggleEdit(binding.editUserName, binding.iconEditName)
         setToggleEdit(binding.editUserPhone, binding.iconEditPhone)
@@ -145,12 +133,7 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener { logoutUser() }
     }
 
-    /**
-     * 🖊 Tapping the icon:
-     *  - If not editing: enables the field.
-     *  - If editing same field: saves changes and disables.
-     *  - If editing another: asks to save or discard current first.
-     */
+    // Handle edit icon.
     private fun setToggleEdit(editText: EditText, icon: View) {
         icon.setOnClickListener {
             when {
@@ -192,9 +175,7 @@ class ProfileFragment : Fragment() {
 
     }
 
-    /**
-     * 📥 Alert dialog: Save or Discard unsaved data.
-     */
+    //Alert dialog: Save or Discard unsaved data.
     private fun promptToSaveOrDiscard(onDiscard: () -> Unit) {
         AlertDialog.Builder(requireContext())
             .setTitle("Unsaved Changes")
@@ -212,9 +193,7 @@ class ProfileFragment : Fragment() {
             .show()
     }
 
-    /**
-     * ☁️ Send updated profile data to Firestore.
-     */
+    //Send updated profile data to Firestore.
     private fun saveChangesToFirestore() {
         val updated = UserData(
             name = binding.editUserName.text.toString().trim(),
@@ -223,10 +202,12 @@ class ProfileFragment : Fragment() {
             address = binding.editUserAddress.text.toString().trim()
         )
 
-        profileViewModel.updateProfile(
+        ProfileRepository.updateUserProfile(
+            requireContext(),
             updated = updated,
             onSuccess = {
                 if (isAdded && context != null) {
+                    profileViewModel.setProfile(updated)
                     Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
                 }
             },
@@ -238,9 +219,7 @@ class ProfileFragment : Fragment() {
         )
     }
 
-    /**
-     * 🔐 Show password change dialog with re-auth.
-     */
+    // Show password change dialog with re-auth.
     private fun showPasswordChangeDialog() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
@@ -297,43 +276,13 @@ class ProfileFragment : Fragment() {
             .show()
     }
 
-    /**
-     * 🚪 Logout and redirect to auth screen.
-     */
+    // Logout and redirect to auth screen.
+
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
+        SharedPrefsManager.clear(requireContext())
         findNavController().navigate(R.id.authFragment)
     }
-
-
-/*
-*
-*  private fun animateBorder(editText: EditText, isEditing: Boolean) {
-        val fromColor = ContextCompat.getColor(
-            requireContext(),
-            if (isEditing) R.color.border_normal else R.color.border_editing
-        )
-        val toColor = ContextCompat.getColor(
-            requireContext(),
-            if (isEditing) R.color.border_editing else R.color.border_normal
-        )
-
-        val background = editText.background
-        if (background is GradientDrawable) {
-            val animator = ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
-                duration = 300
-                addUpdateListener { valueAnimator ->
-                    val color = valueAnimator.animatedValue as Int
-                    background.setStroke(2.dpToPx(requireContext()), color)
-                }
-            }
-            animator.start()
-        }
-    }
-    fun Int.dpToPx(context: Context): Int =
-        (this * context.resources.displayMetrics.density).toInt()
-*
-* */
 
 
     /**

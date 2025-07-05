@@ -1,7 +1,8 @@
 package com.example.codecupapp
 
+
 data class RedeemItem(
-    val name: String,
-    val date: String,
-    val points: Int
+    val title: String = "",
+    val points: Int = 0,
+    val date: String = ""
 )

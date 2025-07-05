@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.FragmentAuthBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -105,13 +106,24 @@ class AuthFragment : Fragment() {
                         "gender" to genderVal,
                         "address" to addressVal
                     )
+
                     FirebaseFirestore.getInstance()
                         .collection("users")
                         .document(uid)
                         .set(profile)
                         .addOnSuccessListener {
                             Toast.makeText(requireContext(), "Account created!", Toast.LENGTH_SHORT).show()
-                            findNavController().navigate(R.id.homeFragment)
+
+                            // ✅ After storing to Firestore, load full profile and save locally
+                            lifecycleScope.launch {
+                                try {
+                                    val userData = ProfileRepository.loadUserProfileSuspend(requireContext())
+                                    SharedPrefsManager.saveUserProfile(requireContext(), userData)
+                                    findNavController().navigate(R.id.homeFragment)
+                                } catch (e: Exception) {
+                                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                         .addOnFailureListener {
                             Toast.makeText(requireContext(), "Failed to save profile: ${it.message}", Toast.LENGTH_SHORT).show()
@@ -136,14 +148,13 @@ class AuthFragment : Fragment() {
             .addOnSuccessListener {
                 lifecycleScope.launch {
                     try {
-                        val userData = ProfileRepository.loadUserProfileSuspend()
-                        // ✅ Use the profile if needed
+                        val userData = ProfileRepository.loadUserProfileSuspend(requireContext())
+                        SharedPrefsManager.saveUserProfile(requireContext(), userData) // ✅ Save locally
                         findNavController().navigate(R.id.homeFragment)
                     } catch (e: Exception) {
                         Toast.makeText(requireContext(), "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Login failed: ${it.message}", Toast.LENGTH_SHORT).show()

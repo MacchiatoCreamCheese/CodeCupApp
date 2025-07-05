@@ -3,7 +3,7 @@ package com.example.codecupapp
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.codecupapp.data.OrderItem
+import OrderItem
 import com.example.codecupapp.databinding.ItemOrderCardBinding
 
 class OrdersAdapter(
@@ -39,6 +39,10 @@ class OrdersAdapter(
     }
 
     override fun getItemCount(): Int = orders.size
+
+    fun getItemAt(position: Int): OrderItem? {
+        return if (position in orders.indices) orders[position] else null
+    }
 
     fun updateData(newItems: List<OrderItem>) {
         orders = newItems

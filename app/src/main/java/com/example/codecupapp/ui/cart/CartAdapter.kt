@@ -8,7 +8,7 @@ import com.example.codecupapp.databinding.ItemCartBinding
 
 
 class CartAdapter(
-    private val items: MutableList<CartItem>,
+    private var items: MutableList<CartItem>,
     private val onDelete: (Int) -> Unit
 ) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
@@ -34,11 +34,18 @@ class CartAdapter(
 
     override fun getItemCount(): Int = items.size
 
-    // ❌ Remove item from list and notify adapter
+    fun getItemAt(position: Int): CartItem? =
+        if (position in items.indices) items[position] else null
+
     fun removeAt(position: Int) {
         if (position in items.indices) {
             items.removeAt(position)
             notifyItemRemoved(position)
         }
+    }
+
+    fun updateData(newItems: MutableList<CartItem>) {
+        items = newItems
+        notifyDataSetChanged()
     }
 }

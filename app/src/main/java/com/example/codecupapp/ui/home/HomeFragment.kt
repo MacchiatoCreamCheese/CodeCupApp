@@ -184,7 +184,7 @@ class HomeFragment : Fragment() {
     /** 🔁 Always reload profile when returning to Home */
     override fun onResume() {
         super.onResume()
-        profileViewModel.loadProfile()
+        profileViewModel.loadFromLocal(requireContext())
     }
 
     /** 🧹 Cleanup view binding */

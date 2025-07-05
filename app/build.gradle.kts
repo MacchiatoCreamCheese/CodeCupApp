@@ -3,8 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
-
-
 }
 
 android {
@@ -51,7 +49,7 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui-ktx:2.9.1")
     implementation ("androidx.cardview:cardview:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.1")
-
+    implementation("com.google.code.gson:gson:2.10.1")
 
 
     implementation(libs.androidx.core.ktx)

@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.databinding.ItemRedeemBinding
-
+import PointTransaction
 
 /**
  * Adapter for displaying redeemed rewards or point transactions in a RecyclerView.

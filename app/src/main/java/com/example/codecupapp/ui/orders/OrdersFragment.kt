@@ -80,7 +80,6 @@ class OrdersFragment : Fragment() {
         ordersAdapter.updateData(ordersViewModel.historyOrders.value ?: emptyList())
     }
 
-
     private fun attachSwipeToArchive() {
         val swipeToArchive = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(
@@ -90,27 +89,29 @@ class OrdersFragment : Fragment() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                if (!showingOngoing) {
-                    binding.recyclerOrders.adapter?.notifyItemChanged(viewHolder.adapterPosition)
+                val position = viewHolder.bindingAdapterPosition
+                val view = viewHolder.itemView
+
+                if (position == RecyclerView.NO_POSITION || !showingOngoing) {
+                    ordersAdapter.notifyItemChanged(position)
                     return
                 }
-                val position = viewHolder.adapterPosition
-                val view = viewHolder.itemView
 
                 view.animate()
                     .translationX(-view.width.toFloat())
                     .alpha(0f)
                     .setDuration(300)
                     .withEndAction {
-                        val item = ordersViewModel.ongoingOrders.value?.getOrNull(position)
+                        val item = ordersAdapter.getItemAt(position)
+
                         if (item != null) {
                             ordersViewModel.removeOngoing(item)
                             ordersViewModel.addToHistory(item)
+                            ordersAdapter.notifyItemRemoved(position)
+                        } else {
+                            ordersAdapter.notifyItemChanged(position)
                         }
 
-                        binding.recyclerOrders.adapter?.notifyItemRemoved(position)
-
-                        // Reset view properties in case it's reused
                         view.alpha = 1f
                         view.translationX = 0f
                     }

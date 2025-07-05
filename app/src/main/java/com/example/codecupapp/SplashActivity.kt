@@ -6,9 +6,11 @@ import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.codecupapp.data.SharedPrefsManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 class SplashActivity : AppCompatActivity() {
 
@@ -16,30 +18,24 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // ✅ Launch coroutine on main thread
         lifecycleScope.launch {
-            delay(1000) // ⏳ Splash screen delay
+            delay(1000) // ⏳ Optional splash delay
 
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user != null) {
-                try {
-                    // 🧠 Suspend and wait for profile load
-                    val profile = ProfileRepository.loadUserProfileSuspend()
-                    Log.d("SplashActivity", "User profile loaded: $profile")
+            val firebaseUser = FirebaseAuth.getInstance().currentUser
+            val localProfile = SharedPrefsManager.loadUserProfile(this@SplashActivity)
 
-                    // ✅ Navigate to Main with profile
-                    val intent = Intent(this@SplashActivity, MainActivity::class.java).apply {
-                        putExtra("startFromHome", true)
-                    }
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    Log.e("SplashActivity", "Error loading profile: ${e.message}")
+            if (firebaseUser != null && localProfile != null) {
+                Log.d("SplashActivity", "Auto-login with local profile: $localProfile")
 
-                    // ⚠️ Still let user into app even if profile load fails
-                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                // ✅ Go directly to main
+                val intent = Intent(this@SplashActivity, MainActivity::class.java).apply {
+                    putExtra("startFromHome", true)
                 }
+                startActivity(intent)
+
             } else {
-                // 🔓 Not logged in → Go to intro screen
+                Log.w("SplashActivity", "No saved profile or not authenticated. Redirecting to Intro.")
+                // 🧾 Send user to login flow
                 startActivity(Intent(this@SplashActivity, IntroActivity::class.java))
             }
 

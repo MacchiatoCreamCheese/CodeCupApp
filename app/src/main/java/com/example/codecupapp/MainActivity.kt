@@ -1,21 +1,20 @@
 package com.example.codecupapp
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
+import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.ActivityMainBinding
-import com.example.codecupapp.data.CoffeePointsConfig
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,17 +26,19 @@ class MainActivity : AppCompatActivity() {
 
     // Shared ViewModel for cart data
     private val cartViewModel: CartViewModel by viewModels()
+    private val profileViewModel: ProfileViewModel by viewModels()
+
     // Menu toggle state
     private var isExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ Inflate layout with ViewBinding
+        // Inflate layout with ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 🔁 If triggered from splash, return to homeFragment
+        // If triggered from splash, return to homeFragment
         if (intent.getBooleanExtra("startFromHome", false)) {
             Handler(Looper.getMainLooper()).post {
                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
@@ -46,24 +47,26 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-        // 🔄 Load user profile using coroutine
-        lifecycleScope.launch {
-            try {
-                val profile = ProfileRepository.loadUserProfileSuspend()
-                Log.d("MainActivity", "User profile loaded: $profile")
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to load profile: ${e.message}")
-            }
+        //Load profile from SharedPreferences
+        val localProfile = SharedPrefsManager.loadUserProfile(this)
+        if (localProfile != null) {
+            Log.d("MainActivity", "Loaded user profile from SharedPrefs: $localProfile")
+            profileViewModel.setProfile(localProfile)
+        } else {
+            Log.w("MainActivity", "No local profile found, redirecting to login.")
+            val intent = Intent(this, SplashActivity::class.java)
+            startActivity(intent)
+            finish()
         }
 
-        setupToolbar()         // 🔧 Setup app top bar and expand buttons
-        setupNavigation()      // 🧭 Setup nav controller, bottom bar, and routing logic
-        observeCartUpdates()   // 🛒 Sync cart badge with cart state
-        setupMenuButtons()     // ❓ Hook help/info buttons
+
+        setupToolbar()
+        setupNavigation()
+        observeCartUpdates()   //Sync cart badge with cart state
+        setupMenuButtons()     // Set up expanding help/info buttons
     }
 
-    /** 🧭 Configure Navigation UI and reactions */
+    // Configure Navigation UI and reactions
     private fun setupNavigation() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
@@ -205,7 +208,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 🛒 Observe cart and update badge */
+    // Observe cart and update badge
     private fun observeCartUpdates() {
         cartViewModel.cartItems.observe(this) { items ->
             val count = items.sumOf { it.quantity }
@@ -213,7 +216,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 🔔 Update badge visibility for floating cart icon */
+    // Update badge visibility for floating cart icon
     fun updateCartBadge(count: Int) {
         val badgeText = count.toString()
         binding.badgeCount.text = badgeText
@@ -222,7 +225,7 @@ class MainActivity : AppCompatActivity() {
         binding.badgeCount.visibility = if (isHome && badgeText != "0") View.VISIBLE else View.GONE
     }
 
-    /** 🔧 Setup toolbar with expand/collapse menu logic */
+    // Setup toolbar with expand/collapse menu logic
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
 
@@ -259,7 +262,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    /** ❓ Help and Info click handlers */
+    // Help and Info click handlers
     private fun setupMenuButtons() {
         binding.btnHelp.setOnClickListener {
             navController.navigate(R.id.helpFragment)
@@ -282,8 +285,14 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    /** 🔙 Enable action bar up navigation */
+    // Enable action bar up navigation
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    //Sync the orders from SharedPreferences to Firebase
+    override fun onStop() {
+        super.onStop()
+
     }
 }
