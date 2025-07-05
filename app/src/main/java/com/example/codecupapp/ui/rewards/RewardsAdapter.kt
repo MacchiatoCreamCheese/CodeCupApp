@@ -15,13 +15,11 @@ class RewardsAdapter(
     private val onRedeem: (RewardItem) -> Unit
 ) : RecyclerView.Adapter<RewardsAdapter.RewardViewHolder>() {
 
-    /**
-     * ViewHolder using ViewBinding for reward card layout.
-     */
+    // ViewHolder using ViewBinding for reward card layout.
     inner class RewardViewHolder(val binding: ItemRewardCardBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    // 🔧 Inflate view using ViewBinding
+    // Inflate view using ViewBinding
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RewardViewHolder {
         val binding = ItemRewardCardBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -31,7 +29,7 @@ class RewardsAdapter(
         return RewardViewHolder(binding)
     }
 
-    // 🎯 Bind data and set click listener
+    // Bind data and set click listener
     override fun onBindViewHolder(holder: RewardViewHolder, position: Int) {
         val reward = rewards[position]
         with(holder.binding) {

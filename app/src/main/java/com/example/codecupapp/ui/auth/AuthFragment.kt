@@ -14,15 +14,19 @@ import com.example.codecupapp.databinding.FragmentAuthBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-
 class AuthFragment : Fragment() {
 
+    // View binding reference (state management)
     private var _binding: FragmentAuthBinding? = null
     private val binding get() = _binding!!
 
+    // State: tracks whether we are in login mode
     private var isLoginMode = false
+
+    // Firebase authentication instance (state management)
     private lateinit var auth: FirebaseAuth
 
+    // UI lifecycle: initializes view binding
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -31,137 +35,157 @@ class AuthFragment : Fragment() {
         return binding.root
     }
 
+    // UI lifecycle: setup logic after view is created
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("AuthFragment", "AuthFragment started")
 
         auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
 
-        if (currentUser != null) {
-            // Optional: guard again, though splash should skip this already
-            findNavController().navigate(R.id.homeFragment)
+        // Auth check: skip auth if user is already logged in
+        auth.currentUser?.let {
+            navigateToHome()
             return
         }
 
+        setupButtonListeners()
+    }
 
-
+    // UI logic: Sets up button click listeners
+    private fun setupButtonListeners() {
         binding.btnSignInMode.setOnClickListener {
-            if (isLoginMode) {
-                switchToSignIn()
-            } else {
-                performSignIn()
-            }
+            if (isLoginMode) switchToSignIn() else performSignIn()
         }
 
         binding.btnLoginMode.setOnClickListener {
-            if (!isLoginMode) {
-                switchToLogin()
-            } else {
-                performLogin()
-            }
+            if (!isLoginMode) switchToLogin() else performLogin()
         }
     }
 
+    // UI logic: Switch to login view
     private fun switchToLogin() {
         isLoginMode = true
         binding.textTitle.text = "Log in"
-        binding.inputName.visibility = View.GONE
-        binding.inputPhone.visibility = View.GONE
-        binding.inputGender.visibility = View.GONE
-        binding.inputAddress.visibility = View.GONE
+        setExtraFieldsVisibility(View.GONE)
     }
 
+    // UI logic: Switch to sign-in view
     private fun switchToSignIn() {
         isLoginMode = false
         binding.textTitle.text = "Sign in"
-        binding.inputName.visibility = View.VISIBLE
-        binding.inputPhone.visibility = View.VISIBLE
-        binding.inputGender.visibility = View.VISIBLE
-        binding.inputAddress.visibility = View.VISIBLE
+        setExtraFieldsVisibility(View.VISIBLE)
     }
 
+    // UI logic: Toggle visibility of fields that only appear during sign-up
+    private fun setExtraFieldsVisibility(visibility: Int) {
+        binding.inputName.visibility = visibility
+        binding.inputPhone.visibility = visibility
+        binding.inputGender.visibility = visibility
+        binding.inputAddress.visibility = visibility
+    }
+
+    // Authentication: Handles sign-up logic
     private fun performSignIn() {
-        val nameVal = binding.inputName.text.toString().trim()
-        val phoneVal = binding.inputPhone.text.toString().trim()
-        val emailVal = binding.inputEmail.text.toString().trim()
-        val genderVal = binding.inputGender.text.toString().trim()
-        val addressVal = binding.inputAddress.text.toString().trim()
-        val passwordVal = binding.inputPassword.text.toString().trim()
+        val name = binding.inputName.text.toString().trim()
+        val phone = binding.inputPhone.text.toString().trim()
+        val email = binding.inputEmail.text.toString().trim()
+        val gender = binding.inputGender.text.toString().trim()
+        val address = binding.inputAddress.text.toString().trim()
+        val password = binding.inputPassword.text.toString().trim()
 
-        if (listOf(nameVal, phoneVal, emailVal, genderVal, addressVal, passwordVal).any { it.isEmpty() }) {
-            Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+        // Validation
+        if (listOf(name, phone, email, gender, address, password).any { it.isEmpty() }) {
+            showToast("Please fill all fields")
             return
         }
 
-        auth.createUserWithEmailAndPassword(emailVal, passwordVal)
+        // Firebase account creation
+        auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                val user = FirebaseAuth.getInstance().currentUser
-                if (user != null) {
-                    val uid = user.uid
-                    val profile = mapOf(
-                        "name" to nameVal,
-                        "email" to emailVal,
-                        "phone" to phoneVal,
-                        "gender" to genderVal,
-                        "address" to addressVal
-                    )
-
-                    FirebaseFirestore.getInstance()
-                        .collection("users")
-                        .document(uid)
-                        .set(profile)
-                        .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Account created!", Toast.LENGTH_SHORT).show()
-
-                            // ✅ After storing to Firestore, load full profile and save locally
-                            lifecycleScope.launch {
-                                try {
-                                    val userData = ProfileRepository.loadUserProfileSuspend(requireContext())
-                                    SharedPrefsManager.saveUserProfile(requireContext(), userData)
-                                    findNavController().navigate(R.id.homeFragment)
-                                } catch (e: Exception) {
-                                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(requireContext(), "Failed to save profile: ${it.message}", Toast.LENGTH_SHORT).show()
-                        }
+                auth.currentUser?.let { user ->
+                    saveUserProfileToFirestore(user.uid, name, phone, email, gender, address)
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+                showToast("Error: ${it.message}")
             }
     }
 
+    // Firestore: Save new user profile data
+    private fun saveUserProfileToFirestore(
+        uid: String,
+        name: String,
+        phone: String,
+        email: String,
+        gender: String,
+        address: String
+    ) {
+        val profile = mapOf(
+            "name" to name,
+            "email" to email,
+            "phone" to phone,
+            "gender" to gender,
+            "address" to address
+        )
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .set(profile)
+            .addOnSuccessListener {
+                showToast("Account created!")
+                loadAndSaveUserProfile()
+            }
+            .addOnFailureListener {
+                showToast("Failed to save profile: ${it.message}")
+            }
+    }
+
+    // Authentication: Handles login logic
     private fun performLogin() {
-        val emailVal = binding.inputEmail.text.toString().trim()
-        val passwordVal = binding.inputPassword.text.toString().trim()
+        val email = binding.inputEmail.text.toString().trim()
+        val password = binding.inputPassword.text.toString().trim()
 
-        if (emailVal.isEmpty() || passwordVal.isEmpty()) {
-            Toast.makeText(requireContext(), "Email and password required", Toast.LENGTH_SHORT).show()
+        // Validation
+        if (email.isEmpty() || password.isEmpty()) {
+            showToast("Email and password required")
             return
         }
 
-        auth.signInWithEmailAndPassword(emailVal, passwordVal)
+        // Firebase login
+        auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                lifecycleScope.launch {
-                    try {
-                        val userData = ProfileRepository.loadUserProfileSuspend(requireContext())
-                        SharedPrefsManager.saveUserProfile(requireContext(), userData) // ✅ Save locally
-                        findNavController().navigate(R.id.homeFragment)
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "Failed to load: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                loadAndSaveUserProfile()
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Login failed: ${it.message}", Toast.LENGTH_SHORT).show()
+                showToast("Login failed: ${it.message}")
             }
     }
 
+    // Workflow: Load user profile from Firestore and save it locally
+    private fun loadAndSaveUserProfile() {
+        lifecycleScope.launch {
+            try {
+                val userData = ProfileRepository.loadUserProfileSuspend(requireContext())
+                SharedPrefsManager.saveUserProfile(requireContext(), userData)
+                navigateToHome()
+            } catch (e: Exception) {
+                showToast("Error loading profile: ${e.message}")
+            }
+        }
+    }
 
+    // Navigation: Directs user to the home screen
+    private fun navigateToHome() {
+        findNavController().navigate(R.id.homeFragment)
+    }
+
+    // Utility: Reusable toast function
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    // Lifecycle: Clean up view binding reference to avoid memory leaks
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

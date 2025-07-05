@@ -1,4 +1,3 @@
-
 package com.example.codecupapp
 
 import PointTransaction
@@ -35,7 +34,9 @@ object ProfileRepository {
                             amount = (map["amount"] as? Long)?.toInt() ?: 0,
                             date = map["date"] as? String ?: ""
                         )
-                    } catch (_: Exception) { null }
+                    } catch (_: Exception) {
+                        null
+                    }
                 } ?: emptyList()
         )
         // Load stamps separately

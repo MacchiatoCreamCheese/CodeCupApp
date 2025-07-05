@@ -14,7 +14,13 @@ class OrderSuccessFragment : Fragment() {
     private var _binding: FragmentOrderSuccessBinding? = null
     private val binding get() = _binding!!
 
+    // Shared ViewModel for tracking loyalty progress
+    private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
 
+    // Flag to prevent adding stamp multiple times on fragment re-creation
+    private var stampAdded = false
+
+    // Inflate layout
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -24,23 +30,23 @@ class OrderSuccessFragment : Fragment() {
         return binding.root
     }
 
-    private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
-    private var stampAdded = false  // Prevents multiple increments on recreation
-
+    // Handle stamp logic and button navigation
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentOrderSuccessBinding.bind(view)
 
+        // Ensure stamp is only added once per successful order
         if (!stampAdded) {
             loyaltyViewModel.addStamp()
             stampAdded = true
         }
 
+        // Navigate to orders page
         binding.btnTrackOrder.setOnClickListener {
             findNavController().navigate(R.id.ordersFragment)
         }
     }
 
+    // Prevent memory leaks
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -4,34 +4,40 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.databinding.ItemPromoCardBinding
-
-
 /**
- * Adapter for displaying promotional images in a ViewPager or RecyclerView.
- * @param promos List of drawable resource IDs representing promotional banners.
+ * Adapter for displaying promotional banners using a RecyclerView.
+ * @param promos List of drawable resource IDs for each promotion image.
  */
 class PromoAdapter(
     private val promos: List<Int>
 ) : RecyclerView.Adapter<PromoAdapter.PromoViewHolder>() {
 
-    // 🧱 ViewHolder using ViewBinding for safer UI references
+    /**
+     * ViewHolder class that holds reference to the layout views
+     * for a single promotional card.
+     */
     inner class PromoViewHolder(val binding: ItemPromoCardBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    // 🔧 Inflate layout using ViewBinding
+    /**
+     * Inflates the layout for a single item using view binding.
+     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PromoViewHolder {
-        val binding = ItemPromoCardBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = ItemPromoCardBinding.inflate(inflater, parent, false)
         return PromoViewHolder(binding)
     }
 
-    // 🖼️ Bind promo image to ViewHolder
+    /**
+     * Binds the image resource at the given position to the view holder.
+     */
     override fun onBindViewHolder(holder: PromoViewHolder, position: Int) {
-        val imageRes = promos[position]
-        holder.binding.promoImage.setImageResource(imageRes)
+        val imageResId = promos[position]
+        holder.binding.promoImage.setImageResource(imageResId)
     }
 
-    // 📦 Total number of promo items
+    /**
+     * Returns the total number of promotional items to display.
+     */
     override fun getItemCount(): Int = promos.size
 }

@@ -22,6 +22,7 @@ class RedeemFragment : Fragment() {
         _binding = FragmentRedeemBinding.inflate(inflater, container, false)
         return binding.root
     }
+
     private val rewardsViewModel: RewardsViewModel by activityViewModels()
     private lateinit var adapter: RedeemAdapter
 

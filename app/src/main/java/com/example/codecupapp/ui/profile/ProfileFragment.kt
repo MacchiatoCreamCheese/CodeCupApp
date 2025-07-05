@@ -21,67 +21,49 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
 class ProfileFragment : Fragment() {
 
-    // View Binding
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // ViewModel for user profile
     private val profileViewModel: ProfileViewModel by viewModels()
 
-    // Tracks unsaved state
     private var isDirty = false
-
-    // Tracks currently editing field & its icon
     private var currentlyEditingField: EditText? = null
     private var currentEditIcon: View? = null
 
-    // Inflate layout
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    // Setup lifecycle logic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentProfileBinding.bind(view)
 
         profileViewModel.loadFromLocal(requireContext())
+        checkAuthenticationOrRedirect()
+        observeUserProfile()
+        handleBackNavigation()
+        setupEditListeners()
 
-
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            binding.textUserEmail.text = currentUser.email
-        } else {
+        FirebaseAuth.getInstance().currentUser?.let {
+            binding.textUserEmail.text = it.email
+        } ?: run {
             binding.textUserEmail.text = "No user signed in"
         }
-
-        checkAuthenticationOrRedirect()
-
-        handleBackNavigation()
-
-        observeUserProfile()
-
-
-        setEditListeners()
     }
 
-    // If user is not logged in, redirect to auth screen
+    // Redirect if not logged in
     private fun checkAuthenticationOrRedirect() {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user == null) {
-            Toast.makeText(requireContext(), "Please log in to access your profile.", Toast.LENGTH_SHORT).show()
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            Toast.makeText(requireContext(), "Please log in", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.authFragment)
         }
     }
 
-    // Observes profile LiveData and updates fields.
+    // Bind ViewModel to form
     private fun observeUserProfile() {
         profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
             binding.editUserName.setText(profile.name)
@@ -92,24 +74,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    //Intercept system back button for unsaved changes.
-    private fun handleBackNavigation() {
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    if (isDirty && currentlyEditingField != null) {
-                        promptToSaveOrDiscard {
-                            findNavController().popBackStack()
-                        }
-                    } else {
-                        findNavController().popBackStack()
-                    }
-                }
-            }
-        )
-    }
-
-    // Disable all input fields until editing is triggered.
+    // Disable edits by default
     private fun disableAllFields() {
         listOf(
             binding.editUserName,
@@ -122,8 +87,8 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // Setup individual edit icon click listeners.
-    private fun setEditListeners() {
+    // Enable editing one field at a time
+    private fun setupEditListeners() {
         setToggleEdit(binding.editUserName, binding.iconEditName)
         setToggleEdit(binding.editUserPhone, binding.iconEditPhone)
         setToggleEdit(binding.editUserGender, binding.iconEditGender)
@@ -133,67 +98,48 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener { logoutUser() }
     }
 
-    // Handle edit icon.
     private fun setToggleEdit(editText: EditText, icon: View) {
         icon.setOnClickListener {
             when {
-                currentlyEditingField == null -> {
-                    editText.isEnabled = true
-                    editText.requestFocus()
-                    editText.setSelection(editText.text.length)
-                    currentlyEditingField = editText
-                    currentEditIcon = icon
-                    isDirty = true
-                    //animateBorder(editText, true)
-                }
-
-                currentlyEditingField == editText -> {
-                    editText.isEnabled = false
-                    saveChangesToFirestore()
-                    //animateBorder(editText, false)
-                    currentlyEditingField = null
-                    currentEditIcon = null
-                    isDirty = false
-                }
-
-                else -> {
-                    promptToSaveOrDiscard {
-                        currentlyEditingField?.isEnabled = false
-                        //currentlyEditingField?.let { animateBorder(it, false) }
-
-                        editText.isEnabled = true
-                        editText.requestFocus()
-                        editText.setSelection(editText.text.length)
-                        currentlyEditingField = editText
-                        currentEditIcon = icon
-                        isDirty = true
-                        //animateBorder(editText, true)
-                    }
+                currentlyEditingField == null -> startEditing(editText, icon)
+                currentlyEditingField == editText -> saveAndExitEdit(editText)
+                else -> promptToSaveOrDiscard {
+                    currentlyEditingField?.isEnabled = false
+                    startEditing(editText, icon)
                 }
             }
         }
-
     }
 
-    //Alert dialog: Save or Discard unsaved data.
+    private fun startEditing(editText: EditText, icon: View) {
+        editText.isEnabled = true
+        editText.requestFocus()
+        editText.setSelection(editText.text.length)
+        currentlyEditingField = editText
+        currentEditIcon = icon
+        isDirty = true
+    }
+
+    private fun saveAndExitEdit(editText: EditText) {
+        editText.isEnabled = false
+        saveChangesToFirestore()
+        currentlyEditingField = null
+        currentEditIcon = null
+        isDirty = false
+    }
+
     private fun promptToSaveOrDiscard(onDiscard: () -> Unit) {
         AlertDialog.Builder(requireContext())
             .setTitle("Unsaved Changes")
-            .setMessage("You have unsaved changes. Save or discard?")
+            .setMessage("Save or discard changes?")
             .setPositiveButton("Save") { _, _ ->
                 saveChangesToFirestore()
-                isDirty = false
-                currentlyEditingField?.isEnabled = false
-                currentlyEditingField = null
-                currentEditIcon = null
+                saveAndExitEdit(currentlyEditingField!!)
             }
-            .setNegativeButton("Discard") { _, _ ->
-                onDiscard()
-            }
+            .setNegativeButton("Discard") { _, _ -> onDiscard() }
             .show()
     }
 
-    //Send updated profile data to Firestore.
     private fun saveChangesToFirestore() {
         val updated = UserData(
             name = binding.editUserName.text.toString().trim(),
@@ -203,27 +149,38 @@ class ProfileFragment : Fragment() {
         )
 
         ProfileRepository.updateUserProfile(
-            requireContext(),
+            context = requireContext(),
             updated = updated,
             onSuccess = {
-                if (isAdded && context != null) {
-                    profileViewModel.setProfile(updated)
-                    Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
-                }
+                profileViewModel.setProfile(updated)
+                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
             },
             onFailure = {
-                if (isAdded && context != null) {
-                    Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(requireContext(), "Update failed", Toast.LENGTH_SHORT).show()
             }
         )
     }
 
-    // Show password change dialog with re-auth.
+    // Ask to save before navigating back
+    private fun handleBackNavigation() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isDirty && currentlyEditingField != null) {
+                        promptToSaveOrDiscard {
+                            findNavController().popBackStack()
+                        }
+                    } else {
+                        findNavController().popBackStack()
+                    }
+                }
+            })
+    }
+
+    // Show password change dialog
     private fun showPasswordChangeDialog() {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user == null) {
-            Toast.makeText(requireContext(), "You are not signed in. Please log in again.", Toast.LENGTH_SHORT).show()
+        val user = FirebaseAuth.getInstance().currentUser ?: run {
+            Toast.makeText(requireContext(), "Please log in again", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -251,43 +208,36 @@ class ProfileFragment : Fragment() {
             .setPositiveButton("Save") { _, _ ->
                 val oldPass = inputOld.text.toString()
                 val newPass = inputNew.text.toString()
-                val email = user.email
+                val email = user.email ?: return@setPositiveButton
 
-                if (email != null) {
-                    val credential = EmailAuthProvider.getCredential(email, oldPass)
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        user.reauthenticate(credential)
-                            .addOnSuccessListener {
-                                user.updatePassword(newPass)
-                                    .addOnSuccessListener {
-                                        Toast.makeText(requireContext(), "Password updated", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .addOnFailureListener {
-                                        Toast.makeText(requireContext(), "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
-                                    }
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(requireContext(), "Incorrect password", Toast.LENGTH_SHORT).show()
-                            }
-                    }
+                val credential = EmailAuthProvider.getCredential(email, oldPass)
+                lifecycleScope.launch(Dispatchers.IO) {
+                    user.reauthenticate(credential)
+                        .addOnSuccessListener {
+                            user.updatePassword(newPass)
+                                .addOnSuccessListener {
+                                    Toast.makeText(requireContext(), "Password updated", Toast.LENGTH_SHORT).show()
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(requireContext(), "Update failed: ${it.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), "Incorrect password", Toast.LENGTH_SHORT).show()
+                        }
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    // Logout and redirect to auth screen.
-
+    // Sign out and clear saved data
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
         SharedPrefsManager.clear(requireContext())
         findNavController().navigate(R.id.authFragment)
     }
 
-
-    /**
-     * 🧼 Clear view binding to prevent memory leaks.
-     */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -15,23 +15,23 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.codecupapp.databinding.FragmentHomeBinding
 
+
 class HomeFragment : Fragment() {
 
-    //View Binding
+    // View Binding
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    //ViewModels (state management)
+    // ViewModels for state management
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
     private val profileViewModel: ProfileViewModel by activityViewModels()
     private val rewardsViewModel: RewardsViewModel by activityViewModels()
 
-    //UI states
+    // UI State
     private var dots = arrayOfNulls<ImageView>(3)
     private var selectedAddressType: String = "Deliver"
 
-    //View creation
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,30 +40,33 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
-    //After view is created
+    // Main UI and data setup
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //Load order state
-        ordersViewModel.loadOrdersFromFirebase()
-        rewardsViewModel.loadRedeemHistoryFromFirebase(requireContext())
-
-        //Dynamic time-based greeting
-        binding.textGreeting.text = getGreeting()
-
-        //Observe user name updates
-        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
-            binding.textUsername.text = "${profile.name}."
-        }
-
-        //Delivery type selector, promotions, coffee menu, loyalty reward stamps
+        loadInitialData()
+        observeUserProfile()
         setupAddressToggle()
         setupPromotions()
         setupCoffeeGrids()
         observeLoyaltyStamps(binding.loyaltyGridLayout)
+        binding.textGreeting.text = getGreeting()
     }
 
-    //Return greeting based on time
+    // Load orders and rewards from Firebase
+    private fun loadInitialData() {
+        ordersViewModel.loadOrdersFromFirebase()
+        rewardsViewModel.loadRedeemHistoryFromFirebase(requireContext())
+    }
+
+    // Observe user's profile and update greeting name
+    private fun observeUserProfile() {
+        profileViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            binding.textUsername.text = "${profile.name}."
+        }
+    }
+
+    // Display greeting based on current time
     private fun getGreeting(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         return when (hour) {
@@ -74,7 +77,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    //Setup toggle between Deliver and Pickup
+    // Toggle between delivery and pickup
     private fun setupAddressToggle() {
         binding.toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
@@ -88,7 +91,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    //Setup promotions carousel (images + dots)
+    // Set up promotions carousel and dots indicator
     private fun setupPromotions() {
         val promoList = listOf(
             R.drawable.ruby_red_simple_embrace_the_journey_desktop_wallpaper,
@@ -106,16 +109,14 @@ class HomeFragment : Fragment() {
         })
     }
 
-    /** 🔘 Add active/inactive indicator dots under carousel */
+    // Create dots for current carousel position
     private fun addDots(count: Int, selectedPosition: Int) {
         binding.dotsLayout.removeAllViews()
         dots = arrayOfNulls(count)
 
         for (i in 0 until count) {
             dots[i] = ImageView(requireContext()).apply {
-                setImageResource(
-                    if (i == selectedPosition) R.drawable.dot_active else R.drawable.dot_inactive
-                )
+                setImageResource(if (i == selectedPosition) R.drawable.dot_active else R.drawable.dot_inactive)
             }
 
             val params = ViewGroup.MarginLayoutParams(
@@ -127,7 +128,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /** ☕ Setup coffee grid menus and navigation to Details */
+    // Load coffee items into grid layout
     private fun setupCoffeeGrids() {
         binding.recyclerBestSeller.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
@@ -144,7 +145,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /** 🎯 Navigate to detail screen with coffee info */
+    // Navigate to coffee detail screen with passed bundle
     private fun navigateToDetails(coffee: CoffeeItem) {
         val bundle = Bundle().apply {
             putString("coffeeName", coffee.name)
@@ -154,11 +155,10 @@ class HomeFragment : Fragment() {
         findNavController().navigate(R.id.detailsFragment, bundle)
     }
 
-    /** 🏆 Observe stamp count and update loyalty stamp grid */
+    // Observe stamp count and update loyalty UI
     private fun observeLoyaltyStamps(gridLayout: GridLayout) {
         loyaltyViewModel.stamps.observe(viewLifecycleOwner) { count ->
             gridLayout.removeAllViews()
-
             for (i in 1..8) {
                 val cupIcon = ImageView(requireContext()).apply {
                     setImageResource(
@@ -179,17 +179,17 @@ class HomeFragment : Fragment() {
         }
     }
 
-    /** 🔧 Extension to convert dp to px */
+    // Extension to convert dp to px
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
 
-    /** 🔁 Always reload profile when returning to Home */
+    // Refresh profile data when returning to screen
     override fun onResume() {
         super.onResume()
         profileViewModel.loadFromLocal(requireContext())
     }
 
-    /** 🧹 Cleanup view binding */
+    // Release binding to avoid memory leaks
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

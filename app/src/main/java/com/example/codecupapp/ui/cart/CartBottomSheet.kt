@@ -20,33 +20,28 @@ class CartBottomSheet(
     private var _binding: CartBottomSheetBinding? = null
     private val binding get() = _binding!!
 
+    // Inflate layout
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = CartBottomSheetBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    // Setup view components
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.recyclerCartPreview.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerCartPreview.adapter = CartPreviewAdapter(cartItems)
-
-        binding.btnConfirm.setOnClickListener {
-            dismiss()
-            onConfirm()
-        }
+        setupRecyclerView()
+        setupConfirmButton()
     }
 
+    // Configure bottom sheet appearance
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
-            // Full width
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-
-            // Transparent background
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            // Elevate above nav bar
             setDimAmount(0.5f)
             setFlags(
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -55,11 +50,27 @@ class CartBottomSheet(
         }
     }
 
+    // Optional: define dynamic height (currently unused)
     private fun getDialogHeight(): Int {
         val displayMetrics = resources.displayMetrics
-        return (displayMetrics.heightPixels * 0.33).toInt() // 1/3 of screen
+        return (displayMetrics.heightPixels * 0.33).toInt()
     }
 
+    // Setup cart preview list
+    private fun setupRecyclerView() {
+        binding.recyclerCartPreview.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerCartPreview.adapter = CartPreviewAdapter(cartItems)
+    }
+
+    // Handle confirm button click
+    private fun setupConfirmButton() {
+        binding.btnConfirm.setOnClickListener {
+            dismiss()
+            onConfirm()
+        }
+    }
+
+    // Prevent memory leaks
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

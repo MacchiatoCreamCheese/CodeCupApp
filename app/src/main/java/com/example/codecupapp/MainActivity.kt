@@ -41,7 +41,8 @@ class MainActivity : AppCompatActivity() {
         // If triggered from splash, return to homeFragment
         if (intent.getBooleanExtra("startFromHome", false)) {
             Handler(Looper.getMainLooper()).post {
-                val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+                val navHostFragment =
+                    supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
                 navHostFragment.navController.navigate(R.id.homeFragment)
             }
         }
@@ -52,7 +53,8 @@ class MainActivity : AppCompatActivity() {
         if (localProfile != null) {
             Log.d("MainActivity", "Loaded user profile from SharedPrefs: $localProfile")
             profileViewModel.setProfile(localProfile)
-        } else {
+        }
+        else {
             Log.w("MainActivity", "No local profile found, redirecting to login.")
             val intent = Intent(this, SplashActivity::class.java)
             startActivity(intent)
@@ -68,7 +70,8 @@ class MainActivity : AppCompatActivity() {
 
     // Configure Navigation UI and reactions
     private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
 
         // Define top-level fragments for app bar config
@@ -105,7 +108,6 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.profileFragment)
             }
         }
-
 
 
         // 🎯 Handle destination changes to show/hide UI parts
@@ -149,10 +151,12 @@ class MainActivity : AppCompatActivity() {
                 isSimpleTop -> {
                     binding.btnProfile.visibility = View.GONE
                 }
+
                 isTopLevel -> {
                     binding.btnProfile.visibility = View.VISIBLE
                     binding.btnProfile.setImageResource(R.drawable.account_circle_40px)
                 }
+
                 else -> {
                     binding.btnProfile.visibility = View.VISIBLE
                     binding.btnProfile.setImageResource(R.drawable.back_arrow)
@@ -261,7 +265,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     // Help and Info click handlers
     private fun setupMenuButtons() {
         binding.btnHelp.setOnClickListener {
@@ -282,7 +285,6 @@ class MainActivity : AppCompatActivity() {
             binding.btnExpandCollapsed.visibility = View.VISIBLE
         }
     }
-
 
 
     // Enable action bar up navigation

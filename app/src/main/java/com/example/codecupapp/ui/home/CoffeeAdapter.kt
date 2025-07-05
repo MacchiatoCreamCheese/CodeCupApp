@@ -16,11 +16,11 @@ class CoffeeAdapter(
     private val onItemClick: (CoffeeItem) -> Unit
 ) : RecyclerView.Adapter<CoffeeAdapter.CoffeeViewHolder>() {
 
-    // 📦 ViewHolder uses ViewBinding for safe view reference
+    // ViewHolder uses ViewBinding for safe view reference
     inner class CoffeeViewHolder(val binding: ItemCoffeeCardBinding) :
         RecyclerView.ViewHolder(binding.root)
 
-    // 🔧 Inflate item layout and create ViewHolder
+    // Inflate item layout and create ViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoffeeViewHolder {
         val binding = ItemCoffeeCardBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -28,7 +28,7 @@ class CoffeeAdapter(
         return CoffeeViewHolder(binding)
     }
 
-    // 🖼️ Bind data to UI
+    // Bind data to UI
     override fun onBindViewHolder(holder: CoffeeViewHolder, position: Int) {
         val coffee = coffeeList[position]
         holder.binding.apply {
@@ -40,6 +40,6 @@ class CoffeeAdapter(
         }
     }
 
-    // 🔢 Number of items
+    // Number of items
     override fun getItemCount(): Int = coffeeList.size
 }

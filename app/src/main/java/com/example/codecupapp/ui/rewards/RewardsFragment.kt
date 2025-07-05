@@ -16,15 +16,15 @@ import com.example.codecupapp.databinding.FragmentRewardsBinding
 
 class RewardsFragment : Fragment() {
 
-    // 🧩 ViewBinding
+    // ViewBinding
     private var _binding: FragmentRewardsBinding? = null
     private val binding get() = _binding!!
 
-    // 📦 Shared ViewModels
+    // Shared ViewModels
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val rewardsViewModel: RewardsViewModel by activityViewModels()
 
-    // 🏗️ Inflate layout with ViewBinding
+    // Inflate layout with ViewBinding
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,18 +33,18 @@ class RewardsFragment : Fragment() {
         return binding.root
     }
 
-    // 🚀 Lifecycle hook: setup UI and observers
+    // Lifecycle hook: setup UI and observers
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 🎯 Loyalty Grid Setup
+        // Loyalty Grid Setup
         observeLoyaltyStamps()
 
         binding.loyaltyGridLayout.setOnClickListener {
             if ((loyaltyViewModel.stamps.value ?: 0) >= 8) showResetDialog()
         }
 
-        // 🎁 Rewards List Setup
+        // Rewards List Setup
         binding.recyclerRewards.layoutManager = LinearLayoutManager(requireContext())
 
         rewardsViewModel.initializeRewards()
@@ -56,9 +56,14 @@ class RewardsFragment : Fragment() {
         rewardsViewModel.rewardList.observe(viewLifecycleOwner) { rewards ->
             binding.recyclerRewards.adapter = RewardsAdapter(rewards) { reward ->
                 if (rewardsViewModel.redeem(reward)) {
-                    Toast.makeText(requireContext(), "Redeemed: ${reward.title}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Redeemed: ${reward.title}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
-                    Toast.makeText(requireContext(), "Not enough points!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Not enough points!", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -69,7 +74,7 @@ class RewardsFragment : Fragment() {
         }
     }
 
-    // 🧃 Observe loyalty stamps and update grid
+    // Observe loyalty stamps and update grid
     private fun observeLoyaltyStamps() {
         loyaltyViewModel.stamps.observe(viewLifecycleOwner) { count ->
             val gridLayout = binding.loyaltyGridLayout
@@ -91,7 +96,7 @@ class RewardsFragment : Fragment() {
         }
     }
 
-    // 🗨️ Dialog to confirm loyalty reset
+    // Dialog to confirm loyalty reset
     private fun showResetDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Reset Loyalty Card?")
@@ -103,13 +108,13 @@ class RewardsFragment : Fragment() {
             .show()
     }
 
-    // 🧹 Cleanup
+    // Cleanup
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    // 🧮 Extension for dp-to-px conversion
+    // Extension for dp-to-px conversion
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
 }
