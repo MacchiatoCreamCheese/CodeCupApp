@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.codecupapp.data.SharedPrefsManager
 
 class ProfileViewModel : ViewModel() {
 
@@ -12,13 +13,24 @@ class ProfileViewModel : ViewModel() {
     val userProfile: LiveData<UserData> get() = _userProfile
 
     fun loadFromLocal(context: Context) {
-        _userProfile.value = ProfileRepository.loadFromLocal(context)
+        _userProfile.value = SharedPrefsManager.loadUserProfile(context)
     }
 
+    fun setProfile(user: UserData) {
+        _userProfile.value = user
+    }
 
-    fun setProfile(profile: UserData) {
-        _userProfile.value = profile
+    fun saveToLocal(context: Context, profile: UserData) {
+        val prefs = context.getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putString("name", profile.name)
+            putString("phone", profile.phone)
+            putString("gender", profile.gender)
+            putString("address", profile.address)
+            putString("email", profile.email)
+        }.apply()
     }
 }
+
 
 

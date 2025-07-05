@@ -294,10 +294,13 @@ class DetailsFragment : Fragment() {
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    binding.dimOverlay.alpha = slideOffset * 0.7f
-                    binding.dimOverlay.visibility = if (slideOffset > 0f) View.VISIBLE else View.GONE
-                    binding.btnAddToCart.visibility = if (slideOffset > 0f) View.GONE else View.VISIBLE
+                    val safeBinding = _binding ?: return
+
+                    safeBinding.dimOverlay.alpha = slideOffset * 0.7f
+                    safeBinding.dimOverlay.visibility = if (slideOffset > 0f) View.VISIBLE else View.GONE
+                    safeBinding.btnAddToCart.visibility = if (slideOffset > 0f) View.GONE else View.VISIBLE
                 }
+
             })
         }
 

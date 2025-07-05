@@ -33,7 +33,7 @@ class RedeemAdapter(
         val item = items[position]
         holder.binding.apply {
             textRedeemTitle.text = item.source
-            textRedeemDate.text = item.date
+            textRedeemDate.text = item.timestamp
             textRedeemPoints.text =
                 if (item.amount >= 0) "+${item.amount} pts" else "${item.amount} pts"
         }

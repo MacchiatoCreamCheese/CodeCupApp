@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Keep Kotlin data classes with no-arg constructors
+-keepclassmembers class * {
+    public <init>();
+}
+-keep class com.yourpackage.model.** { *; }

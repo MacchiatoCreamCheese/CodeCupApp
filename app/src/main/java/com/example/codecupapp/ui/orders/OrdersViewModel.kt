@@ -78,25 +78,12 @@ class OrdersViewModel : ViewModel() {
     }
 
     // Loads ongoing and history orders from Firestore (used on login)
-    fun loadOrdersFromFirebase() {
-        viewModelScope.launch {
-            try {
-                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-                val doc = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(uid)
-                    .get()
-                    .await()
 
-                val userData = doc.toObject(UserData::class.java)
-                _ongoingOrders.value = userData?.ongoingOrders?.toMutableList() ?: mutableListOf()
-                _historyOrders.value = userData?.historyOrders?.toMutableList() ?: mutableListOf()
-            } catch (e: Exception) {
-                Log.e("OrdersViewModel", "Failed to load orders: ${e.message}")
-            }
-        }
+    fun setHistoryOrders(orders: MutableList<OrderItem>) {
+        _historyOrders.value = orders
+    }
+    fun setOngoingOrders(orders: MutableList<OrderItem>) {
+        _ongoingOrders.value = orders
     }
 
-    // Helper function to refresh order lists
-    fun refresh() = loadOrdersFromFirebase()
 }

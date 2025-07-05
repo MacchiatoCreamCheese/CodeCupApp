@@ -91,35 +91,11 @@ class RewardsViewModel : ViewModel() {
         }
     }
 
-    fun loadRedeemHistoryFromFirebase(context: Context) {
-        viewModelScope.launch {
-            try {
-                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-                val snapshot = FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(uid)
-                    .get()
-                    .await()
 
-                val historyList =
-                    snapshot["redeemHistory"] as? List<Map<String, Any>> ?: emptyList()
-                val parsed = historyList.mapNotNull { map ->
-                    try {
-                        PointTransaction(
-                            source = map["source"] as? String ?: "",
-                            amount = (map["amount"] as? Long)?.toInt() ?: 0,
-                            date = map["date"] as? String ?: ""
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-                _transactionHistory.value = parsed
-            } catch (e: Exception) {
-                Log.e("RewardsViewModel", "Failed to load redeemHistory: ${e.message}")
-            }
-        }
-    }
+fun setTransactionHistory(history: List<PointTransaction>) {
+    _transactionHistory.value = history
+}
+
 
     fun redeem(reward: RewardItem): Boolean {
         val current = _points.value ?: 0
@@ -144,6 +120,7 @@ class RewardsViewModel : ViewModel() {
             }
         }
     }
+
 
 
 

@@ -1,8 +1,10 @@
 package com.example.codecupapp
 
 import UserData
+import android.content.Context
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +21,7 @@ import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.FragmentProfileBinding
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 class ProfileFragment : Fragment() {
@@ -42,8 +45,8 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        profileViewModel.loadFromLocal(requireContext())
         checkAuthenticationOrRedirect()
+        profileViewModel.loadFromLocal(requireContext())
         observeUserProfile()
         handleBackNavigation()
         setupEditListeners()
@@ -122,44 +125,50 @@ class ProfileFragment : Fragment() {
 
     private fun saveAndExitEdit(editText: EditText) {
         editText.isEnabled = false
-        saveChangesToFirestore()
+
+        val key = when (editText) {
+            binding.editUserName -> "name"
+            binding.editUserPhone -> "phone"
+            binding.editUserGender -> "gender"
+            binding.editUserAddress -> "address"
+            else -> null
+        }
+
+        key?.let { cacheProfileField(it, editText.text.toString().trim()) }
+
         currentlyEditingField = null
         currentEditIcon = null
         isDirty = false
     }
 
     private fun promptToSaveOrDiscard(onDiscard: () -> Unit) {
+        val editText = currentlyEditingField ?: return
+
+        val key = when (editText) {
+            binding.editUserName -> "name"
+            binding.editUserPhone -> "phone"
+            binding.editUserGender -> "gender"
+            binding.editUserAddress -> "address"
+            else -> null
+        }
+
         AlertDialog.Builder(requireContext())
             .setTitle("Unsaved Changes")
             .setMessage("Save or discard changes?")
             .setPositiveButton("Save") { _, _ ->
-                saveChangesToFirestore()
-                saveAndExitEdit(currentlyEditingField!!)
+                key?.let {
+                    cacheProfileField(it, editText.text.toString().trim())
+                }
+                saveAndExitEdit(editText)
             }
             .setNegativeButton("Discard") { _, _ -> onDiscard() }
             .show()
     }
 
-    private fun saveChangesToFirestore() {
-        val updated = UserData(
-            name = binding.editUserName.text.toString().trim(),
-            phone = binding.editUserPhone.text.toString().trim(),
-            gender = binding.editUserGender.text.toString().trim(),
-            address = binding.editUserAddress.text.toString().trim()
-        )
-
-        ProfileRepository.updateUserProfile(
-            context = requireContext(),
-            updated = updated,
-            onSuccess = {
-                profileViewModel.setProfile(updated)
-                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
-            },
-            onFailure = {
-                Toast.makeText(requireContext(), "Update failed", Toast.LENGTH_SHORT).show()
-            }
-        )
+    private fun cacheProfileField(key: String, value: String) {
+        SharedPrefsManager.updateField(requireContext(), key, value)
     }
+
 
     // Ask to save before navigating back
     private fun handleBackNavigation() {
@@ -233,13 +242,40 @@ class ProfileFragment : Fragment() {
 
     // Sign out and clear saved data
     private fun logoutUser() {
+        val updates = SharedPrefsManager.getAllAsMap(requireContext())
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (uid != null && updates.isNotEmpty()) {
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .update(updates)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Profile synced", Toast.LENGTH_SHORT).show()
+                    SharedPrefsManager.clear(requireContext())
+                    finishLogout()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Failed to sync: ${it.message}", Toast.LENGTH_SHORT).show()
+                    finishLogout()
+                }
+        } else {
+            finishLogout()
+        }
+    }
+
+
+
+    private fun finishLogout() {
         FirebaseAuth.getInstance().signOut()
-        SharedPrefsManager.clear(requireContext())
+        SharedPrefsManager.clear(requireContext()) // if you’re using this
         findNavController().navigate(R.id.authFragment)
     }
 
+
     override fun onDestroyView() {
+         _binding = null
         super.onDestroyView()
-        _binding = null
     }
+
 }

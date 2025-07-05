@@ -13,43 +13,22 @@ object ProfileRepository {
 
     suspend fun loadUserProfileSuspend(context: Context): UserData {
         val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Not signed in")
+
         val snapshot = FirebaseFirestore.getInstance()
             .collection("users")
             .document(user.uid)
             .get()
             .await()
 
-        val profile = UserData(
-            name = snapshot.getString("name") ?: "Guest",
-            email = snapshot.getString("email") ?: "",
-            phone = snapshot.getString("phone") ?: "",
-            gender = snapshot.getString("gender") ?: "",
-            address = snapshot.getString("address") ?: "",
-            points = (snapshot.getLong("points") ?: 0L).toInt(), // 👈 load points
-            redeemHistory = (snapshot["redeemHistory"] as? List<Map<String, Any>>)
-                ?.mapNotNull { map ->
-                    try {
-                        PointTransaction(
-                            source = map["source"] as? String ?: "",
-                            amount = (map["amount"] as? Long)?.toInt() ?: 0,
-                            date = map["date"] as? String ?: ""
-                        )
-                    } catch (_: Exception) {
-                        null
-                    }
-                } ?: emptyList()
-        )
-        // Load stamps separately
-        val stampCount = (snapshot.getLong("stamps") ?: 0L).toInt()
-        SharedPrefsManager.saveUserProfile(context, profile) // 🟢 Store locally too
+        val profile = snapshot.toObject(UserData::class.java)
+            ?: throw Exception("Profile not found")
 
-
-        // Push to ViewModels if in login fragment
-        RewardsViewModel().setPoints(profile.points)
-        LoyaltyViewModel().setInitialStamps(stampCount)
+        // Save locally
+        SharedPrefsManager.saveUserProfile(context, profile)
 
         return profile
     }
+
 
     fun updateUserProfile(
         context: Context,

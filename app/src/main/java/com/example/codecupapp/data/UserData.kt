@@ -10,10 +10,11 @@ data class OrderItem(
 
 @Keep
 data class PointTransaction(
-    val source: String,  // "Order: Latte" or "Redeemed Free Coffee"
-    val amount: Int,     // Positive = Earned, Negative = Spent
-    val date: String
+    var source: String = "",
+    var amount: Int = 0,
+    var timestamp: String = "" // or "date" if that’s what’s used in Firestore
 )
+
 
 @Keep
 data class UserData(

@@ -1,5 +1,6 @@
 package com.example.codecupapp
 
+import UserData
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -93,13 +94,11 @@ class AuthFragment : Fragment() {
         val address = binding.inputAddress.text.toString().trim()
         val password = binding.inputPassword.text.toString().trim()
 
-        // Validation
         if (listOf(name, phone, email, gender, address, password).any { it.isEmpty() }) {
             showToast("Please fill all fields")
             return
         }
 
-        // Firebase account creation
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 auth.currentUser?.let { user ->
@@ -111,6 +110,7 @@ class AuthFragment : Fragment() {
             }
     }
 
+
     // Firestore: Save new user profile data
     private fun saveUserProfileToFirestore(
         uid: String,
@@ -120,12 +120,17 @@ class AuthFragment : Fragment() {
         gender: String,
         address: String
     ) {
-        val profile = mapOf(
-            "name" to name,
-            "email" to email,
-            "phone" to phone,
-            "gender" to gender,
-            "address" to address
+        val profile = UserData(
+            name = name,
+            email = email,
+            phone = phone,
+            gender = gender,
+            address = address,
+            points = 0,
+            stamps = 0,
+            redeemHistory = listOf(),
+            ongoingOrders = listOf(),
+            historyOrders = listOf()
         )
 
         FirebaseFirestore.getInstance()
@@ -138,8 +143,10 @@ class AuthFragment : Fragment() {
             }
             .addOnFailureListener {
                 showToast("Failed to save profile: ${it.message}")
+                Log.e("FirestoreError", it.message ?: "unknown error")
             }
     }
+
 
     // Authentication: Handles login logic
     private fun performLogin() {

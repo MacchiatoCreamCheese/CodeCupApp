@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.tasks.await
 
 
 /**
@@ -18,8 +18,6 @@ class LoyaltyViewModel : ViewModel() {
 
     // Internal mutable stamp count (max 8)
     private val _stamps = MutableLiveData(0)
-
-    // Exposed immutable LiveData for observers (UI)
     val stamps: LiveData<Int> = _stamps
 
     /** Increments the stamp count by 1 (up to 8), and syncs to Firestore */
@@ -38,6 +36,7 @@ class LoyaltyViewModel : ViewModel() {
     /** Sets initial stamp count (used on login) */
     fun setInitialStamps(count: Int) {
         _stamps.value = count
+        syncStampsToFirestore(count)
     }
 
     /** Pushes current stamp count to Firestore */
@@ -54,5 +53,7 @@ class LoyaltyViewModel : ViewModel() {
             }
         }
     }
+
+
 }
 

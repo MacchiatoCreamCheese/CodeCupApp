@@ -10,11 +10,16 @@ import android.widget.GridLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.codecupapp.databinding.FragmentHomeBinding
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 class HomeFragment : Fragment() {
 
@@ -55,9 +60,37 @@ class HomeFragment : Fragment() {
 
     // Load orders and rewards from Firebase
     private fun loadInitialData() {
-        ordersViewModel.loadOrdersFromFirebase()
-        rewardsViewModel.loadRedeemHistoryFromFirebase(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val snapshot = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+
+                val userData = snapshot.toObject(UserData::class.java)
+
+                // Load orders
+                ordersViewModel.setOngoingOrders(userData?.ongoingOrders?.toMutableList() ?: mutableListOf())
+                ordersViewModel.setHistoryOrders(userData?.historyOrders?.toMutableList() ?: mutableListOf())
+
+                // Load points & history
+                val points = (snapshot.getLong("points") ?: 0L).toInt()
+                rewardsViewModel.setPoints(points)
+
+                rewardsViewModel.setTransactionHistory(userData?.redeemHistory?.toMutableList() ?: mutableListOf())
+
+                // Load stamps
+                val stampCount = (snapshot.getLong("stamps") ?: 0L).toInt()
+                loyaltyViewModel.setInitialStamps(stampCount)
+
+            } catch (e: Exception) {
+                Log.e("HomeFragment", "Failed to load initial data: ${e.message}")
+            }
+        }
     }
+
 
     // Observe user's profile and update greeting name
     private fun observeUserProfile() {
@@ -194,4 +227,6 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+
 }
