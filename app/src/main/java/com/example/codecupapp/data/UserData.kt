@@ -23,6 +23,7 @@ data class UserData(
     var gender: String = "",
     var address: String = "",
     var points: Int = 0,
+    var stamps: Int = 0,
     var ongoingOrders: List<OrderItem> = listOf(),
     var historyOrders: List<OrderItem> = listOf(),
     var redeemHistory: List<PointTransaction> = listOf()

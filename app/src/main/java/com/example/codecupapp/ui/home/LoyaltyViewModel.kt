@@ -16,4 +16,8 @@ class LoyaltyViewModel : ViewModel() {
     fun resetStamps() {
         _stamps.value = 0
     }
+    fun setInitialStamps(count: Int) {
+        _stamps.value = count
+    }
+
 }

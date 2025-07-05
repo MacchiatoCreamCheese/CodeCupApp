@@ -5,6 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.codecupapp.data.RewardItem
 import PointTransaction
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class RewardsViewModel : ViewModel() {
 
@@ -31,6 +38,19 @@ class RewardsViewModel : ViewModel() {
         _redeemList.value = updated
     }
 
+    private val _stamps = MutableLiveData(0)
+    val stamps: LiveData<Int> get() = _stamps
+
+    fun incrementStamp() {
+        val newCount = (_stamps.value ?: 0) + 1
+        _stamps.value = newCount
+        syncStampsToFirestore(newCount)
+    }
+
+    fun resetStamps() {
+        _stamps.value = 0
+        syncStampsToFirestore(0)
+    }
 
     fun initializeRewards() {
         if (_rewardList.value.isNullOrEmpty()) {
@@ -48,24 +68,77 @@ class RewardsViewModel : ViewModel() {
 
     fun setPoints(value: Int) {
         _points.value = value
+        syncPointsToFirestore(value)
     }
 
     fun addPoints(source: String, amount: Int) {
-        _points.value = (_points.value ?: 0) + amount
+        val updated = (_points.value ?: 0) + amount
+        _points.value = updated
         recordTransaction(source, amount)
+        syncPointsToFirestore(updated)
     }
 
     fun subtractPoints(source: String, amount: Int) {
-        _points.value = (_points.value ?: 0) - amount
+        val updated = (_points.value ?: 0) - amount
+        _points.value = updated
         recordTransaction(source, -amount)
+        syncPointsToFirestore(updated)
     }
+
 
     private fun recordTransaction(source: String, amount: Int) {
         val formatter = java.text.SimpleDateFormat("dd MMM | hh:mm a", java.util.Locale.getDefault())
+        val newTransaction = PointTransaction(source, amount, formatter.format(java.util.Date()))
+
         val updated = _transactionHistory.value.orEmpty().toMutableList()
-        updated.add(0, PointTransaction(source, amount, formatter.format(java.util.Date())))
+        updated.add(0, newTransaction)
         _transactionHistory.value = updated
+
+        syncRedeemHistoryToFirebase(updated)
     }
+    private fun syncRedeemHistoryToFirebase(history: List<PointTransaction>) {
+        viewModelScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val data = mapOf("redeemHistory" to history)
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .update(data)
+            } catch (e: Exception) {
+                Log.e("RewardsViewModel", "Failed to sync redeemHistory: ${e.message}")
+            }
+        }
+    }
+    fun loadRedeemHistoryFromFirebase(context: Context) {
+        viewModelScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val snapshot = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .get()
+                    .await()
+
+                val historyList = snapshot["redeemHistory"] as? List<Map<String, Any>> ?: emptyList()
+                val parsed = historyList.mapNotNull { map ->
+                    try {
+                        PointTransaction(
+                            source = map["source"] as? String ?: "",
+                            amount = (map["amount"] as? Long)?.toInt() ?: 0,
+                            date = map["date"] as? String ?: ""
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                _transactionHistory.value = parsed
+            } catch (e: Exception) {
+                Log.e("RewardsViewModel", "Failed to load redeemHistory: ${e.message}")
+            }
+        }
+    }
+
     fun redeem(reward: RewardItem): Boolean {
         val current = _points.value ?: 0
         return if (current >= reward.pointsRequired) {
@@ -73,6 +146,32 @@ class RewardsViewModel : ViewModel() {
             true
         } else {
             false
+        }
+    }
+    private fun syncPointsToFirestore(points: Int) {
+        viewModelScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .update("points", points)
+            } catch (e: Exception) {
+                Log.e("RewardsViewModel", "Failed to sync points: ${e.message}")
+            }
+        }
+    }
+    fun syncStampsToFirestore(stampCount: Int) {
+        viewModelScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(uid)
+                    .update("stamps", stampCount)
+            } catch (e: Exception) {
+                Log.e("LoyaltyViewModel", "Failed to sync stamps: ${e.message}")
+            }
         }
     }
 

@@ -25,6 +25,7 @@ class HomeFragment : Fragment() {
     private val loyaltyViewModel: LoyaltyViewModel by activityViewModels()
     private val ordersViewModel: OrdersViewModel by activityViewModels()
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val rewardsViewModel: RewardsViewModel by activityViewModels()
 
     //UI states
     private var dots = arrayOfNulls<ImageView>(3)
@@ -45,6 +46,7 @@ class HomeFragment : Fragment() {
 
         //Load order state
         ordersViewModel.loadOrdersFromFirebase()
+        rewardsViewModel.loadRedeemHistoryFromFirebase(requireContext())
 
         //Dynamic time-based greeting
         binding.textGreeting.text = getGreeting()

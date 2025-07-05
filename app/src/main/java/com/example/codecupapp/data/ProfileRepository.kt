@@ -1,6 +1,7 @@
 
 package com.example.codecupapp
 
+import PointTransaction
 import UserData
 import android.content.Context
 import com.example.codecupapp.data.SharedPrefsManager
@@ -24,10 +25,28 @@ object ProfileRepository {
             email = snapshot.getString("email") ?: "",
             phone = snapshot.getString("phone") ?: "",
             gender = snapshot.getString("gender") ?: "",
-            address = snapshot.getString("address") ?: ""
+            address = snapshot.getString("address") ?: "",
+            points = (snapshot.getLong("points") ?: 0L).toInt(), // 👈 load points
+            redeemHistory = (snapshot["redeemHistory"] as? List<Map<String, Any>>)
+                ?.mapNotNull { map ->
+                    try {
+                        PointTransaction(
+                            source = map["source"] as? String ?: "",
+                            amount = (map["amount"] as? Long)?.toInt() ?: 0,
+                            date = map["date"] as? String ?: ""
+                        )
+                    } catch (_: Exception) { null }
+                } ?: emptyList()
         )
-
+        // Load stamps separately
+        val stampCount = (snapshot.getLong("stamps") ?: 0L).toInt()
         SharedPrefsManager.saveUserProfile(context, profile) // 🟢 Store locally too
+
+
+        // Push to ViewModels if in login fragment
+        RewardsViewModel().setPoints(profile.points)
+        LoyaltyViewModel().setInitialStamps(stampCount)
+
         return profile
     }
 
