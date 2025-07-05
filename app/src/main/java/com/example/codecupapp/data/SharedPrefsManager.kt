@@ -1,8 +1,9 @@
 package com.example.codecupapp.data
 
+import OrderItem
+import PointTransaction
 import UserData
 import android.content.Context
-import com.google.firebase.auth.FirebaseAuth
 
 object SharedPrefsManager {
 
@@ -47,3 +48,83 @@ object SharedPrefsManager {
         return prefs.all.filterValues { it is String } as Map<String, Any>
     }
 }
+
+sealed class PendingWrite {
+    data class OrderItemWrite(val order: OrderItem) : PendingWrite()
+    data class PointChange(val delta: Int) : PendingWrite() // points or stamps
+    data class StampChange(val delta: Int) : PendingWrite() // optional separate class
+    data class RedeemHistoryWrite(val transaction: PointTransaction) : PendingWrite()
+}
+
+object PendingWritesManager {
+
+    private val pendingOrderItems = mutableListOf<OrderItem>()
+    private val pendingRedeemTransactions = mutableListOf<PointTransaction>()
+    private var pendingPointsDelta: Int = 0
+    private var pendingStampsDelta: Int = 0
+
+    fun queueOrder(order: OrderItem) {
+        pendingOrderItems.add(order)
+    }
+
+    fun queueRedeemTransaction(tx: PointTransaction) {
+        pendingRedeemTransactions.add(tx)
+    }
+
+    fun queuePointChange(delta: Int) {
+        pendingPointsDelta += delta
+    }
+
+    fun queueStampChange(delta: Int) {
+        pendingStampsDelta += delta
+    }
+
+    fun hasPendingWrites(): Boolean {
+        return pendingOrderItems.isNotEmpty() ||
+                pendingRedeemTransactions.isNotEmpty() ||
+                pendingPointsDelta != 0 ||
+                pendingStampsDelta != 0
+    }
+
+    fun applyToUserData(user: UserData): UserData {
+        return user.copy(
+            ongoingOrders = user.ongoingOrders + pendingOrderItems,
+            points = user.points + pendingPointsDelta,
+            stamps = user.stamps + pendingStampsDelta,
+            redeemHistory = user.redeemHistory + pendingRedeemTransactions
+        )
+    }
+
+    fun clearOrder() {
+        pendingOrderItems.clear()
+    }
+    fun clearRedeemTransactions() {
+        pendingRedeemTransactions.clear()
+    }
+    fun clearPoints() {
+        pendingPointsDelta = 0
+    }
+    fun clearStamps() {
+        pendingStampsDelta = 0
+    }
+    fun clear() {
+        pendingOrderItems.clear()
+        pendingRedeemTransactions.clear()
+        pendingPointsDelta = 0
+        pendingStampsDelta = 0
+    }
+
+    fun getPendingMap(): Map<String, Any> {
+        val result = mutableMapOf<String, Any>()
+        if (pendingOrderItems.isNotEmpty()) result["ongoingOrders"] = pendingOrderItems
+        if (pendingRedeemTransactions.isNotEmpty()) result["redeemHistory"] = pendingRedeemTransactions
+        if (pendingPointsDelta != 0) result["points"] = pendingPointsDelta
+        if (pendingStampsDelta != 0) result["stamps"] = pendingStampsDelta
+        return result
+    }
+
+
+}
+
+
+

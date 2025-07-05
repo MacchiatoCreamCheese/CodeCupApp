@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.codecupapp.data.PendingWritesManager
 import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.FragmentProfileBinding
 import com.google.firebase.auth.EmailAuthProvider
@@ -242,8 +243,14 @@ class ProfileFragment : Fragment() {
 
     // Sign out and clear saved data
     private fun logoutUser() {
-        val updates = SharedPrefsManager.getAllAsMap(requireContext())
+        val context = requireContext()
         val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        // Combine local SharedPreferences and PendingWritesManager
+        val updates = SharedPrefsManager.getAllAsMap(context).toMutableMap()
+        val pendingWrites = PendingWritesManager.getPendingMap()
+
+        updates.putAll(pendingWrites)
 
         if (uid != null && updates.isNotEmpty()) {
             FirebaseFirestore.getInstance()
@@ -251,12 +258,13 @@ class ProfileFragment : Fragment() {
                 .document(uid)
                 .update(updates)
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Profile synced", Toast.LENGTH_SHORT).show()
-                    SharedPrefsManager.clear(requireContext())
+                    Toast.makeText(context, "Profile synced", Toast.LENGTH_SHORT).show()
+                    SharedPrefsManager.clear(context)
+                    PendingWritesManager.clear()
                     finishLogout()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Failed to sync: ${it.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to sync: ${it.message}", Toast.LENGTH_SHORT).show()
                     finishLogout()
                 }
         } else {

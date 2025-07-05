@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.codecupapp.data.PendingWritesManager
 import com.example.codecupapp.databinding.FragmentOrdersBinding
 
 
@@ -57,6 +58,7 @@ class OrdersFragment : Fragment() {
         binding.recyclerOrders.layoutManager = LinearLayoutManager(requireContext())
         ordersAdapter = OrdersAdapter(emptyList()) { position ->
             // Complete order when tapped
+            PendingWritesManager.queueOrder(ordersAdapter.getItemAt(position)!!)
             ordersViewModel.completeOrder(position)
 
             // Optional: Toast if reward threshold met

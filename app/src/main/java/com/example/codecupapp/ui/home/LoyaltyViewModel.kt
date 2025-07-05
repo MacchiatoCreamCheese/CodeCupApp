@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.codecupapp.data.PendingWritesManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -41,6 +42,7 @@ class LoyaltyViewModel : ViewModel() {
 
     /** Pushes current stamp count to Firestore */
     private fun syncStampsToFirestore(stampCount: Int) {
+        PendingWritesManager.queueStampChange(stampCount)
         viewModelScope.launch {
             try {
                 val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
@@ -48,6 +50,9 @@ class LoyaltyViewModel : ViewModel() {
                     .collection("users")
                     .document(uid)
                     .update("stamps", stampCount)
+                    .addOnSuccessListener {
+                        PendingWritesManager.clearStamps()
+                    }
             } catch (e: Exception) {
                 Log.e("LoyaltyViewModel", "Failed to sync stamps: ${e.message}")
             }

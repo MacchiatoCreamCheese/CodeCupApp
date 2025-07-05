@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.codecupapp.data.CartItem
+import com.example.codecupapp.data.PendingWritesManager
 import com.example.codecupapp.databinding.FragmentCartBinding
 import java.util.Date
 import java.util.Locale
@@ -140,15 +141,14 @@ class CartFragment : Fragment() {
             val uniqueName = "Order_${nameTime}_${selectedType.uppercase()}"
 
             rewardsViewModel.addPoints(uniqueName, totalPoints)
-
-            ordersViewModel.addOngoing(
-                OrderItem(
-                    date = currentDateTime,
-                    name = uniqueName,
-                    address = address,
-                    price = totalPrice
-                ),
+            var orders = OrderItem(
+                date = currentDateTime,
+                name = uniqueName,
+                address = address,
+                price = totalPrice
             )
+            PendingWritesManager.queueOrder(orders)
+            ordersViewModel.addOngoing(orders)
 
             cartViewModel.dispatch(CartAction.ClearCart)
             findNavController().navigate(R.id.orderSuccessFragment)

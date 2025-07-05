@@ -13,8 +13,11 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.example.codecupapp.data.PendingWritesManager
 import com.example.codecupapp.data.SharedPrefsManager
 import com.example.codecupapp.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,6 +56,8 @@ class MainActivity : AppCompatActivity() {
         if (localProfile != null) {
             Log.d("MainActivity", "Loaded user profile from SharedPrefs: $localProfile")
             profileViewModel.setProfile(localProfile)
+
+            trySyncPendingWrites()
         }
         else {
             Log.w("MainActivity", "No local profile found, redirecting to login.")
@@ -115,6 +120,11 @@ class MainActivity : AppCompatActivity() {
             val isAuth = destination.id == R.id.authFragment
             val isHome = destination.id == R.id.homeFragment
 
+            binding.btnExpandCollapsed.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnExpandInsideMenu.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnHelp.visibility = if (isAuth) View.GONE else View.VISIBLE
+            binding.btnInfo.visibility = if (isAuth) View.GONE else View.VISIBLE
+
             // 🟥 These fragments should show a simple top bar: just back + title
             val isSimpleTop = destination.id in setOf(
                 R.id.cartFragment,
@@ -138,7 +148,7 @@ class MainActivity : AppCompatActivity() {
             binding.btnLogo.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
             binding.btnCart.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
             binding.expandedMenu.visibility = View.GONE
-            binding.btnExpandCollapsed.visibility = if (isSimpleTop) View.GONE else View.VISIBLE
+            binding.btnExpandCollapsed.visibility = if (isSimpleTop || isAuth) View.GONE else View.VISIBLE
 
             // 🔁 If simple top: hide profile button, use toolbar back arrow
 // If top-level: show profile icon
@@ -293,8 +303,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Sync the orders from SharedPreferences to Firebase
-    override fun onStop() {
-        super.onStop()
+    private fun trySyncPendingWrites() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val context = this
 
+        val pendingData = PendingWritesManager.getPendingMap().toMutableMap()
+
+        if (pendingData.isEmpty()) {
+            Log.d("PendingWrites", "No pending data to sync.")
+            return
+        }
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .update(pendingData)
+            .addOnSuccessListener {
+                Log.d("PendingWrites", "Successfully synced pending data.")
+                PendingWritesManager.clear()
+            }
+            .addOnFailureListener {
+                Log.e("PendingWrites", "Failed to sync pending data: ${it.message}")
+            }
     }
+
 }

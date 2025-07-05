@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.codecupapp.data.PendingWritesManager
 import com.example.codecupapp.data.RewardItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -68,11 +69,10 @@ class RewardsViewModel : ViewModel() {
         val formatter =
             java.text.SimpleDateFormat("dd MMM | hh:mm a", java.util.Locale.getDefault())
         val newTransaction = PointTransaction(source, amount, formatter.format(java.util.Date()))
-
+        PendingWritesManager.queueRedeemTransaction(newTransaction)
         val updated = _transactionHistory.value.orEmpty().toMutableList()
         updated.add(0, newTransaction)
         _transactionHistory.value = updated
-
         syncRedeemHistoryToFirebase(updated)
     }
 
@@ -85,6 +85,9 @@ class RewardsViewModel : ViewModel() {
                     .collection("users")
                     .document(uid)
                     .update(data)
+                    .addOnSuccessListener {
+                        PendingWritesManager.clearRedeemTransactions()
+                    }
             } catch (e: Exception) {
                 Log.e("RewardsViewModel", "Failed to sync redeemHistory: ${e.message}")
             }
@@ -108,6 +111,7 @@ fun setTransactionHistory(history: List<PointTransaction>) {
     }
 
     private fun syncPointsToFirestore(points: Int) {
+        PendingWritesManager.queuePointChange(points)
         viewModelScope.launch {
             try {
                 val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
@@ -115,6 +119,9 @@ fun setTransactionHistory(history: List<PointTransaction>) {
                     .collection("users")
                     .document(uid)
                     .update("points", points)
+                    .addOnSuccessListener {
+                        PendingWritesManager.clearPoints()
+                    }
             } catch (e: Exception) {
                 Log.e("RewardsViewModel", "Failed to sync points: ${e.message}")
             }
